@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest'
+import { render, screen } from '@testing-library/react'
 
+import { ClientForm } from '@/app/clienten/clienten-form'
 import { buildClientWhere, formatClientName } from '@/app/clienten/query'
+import { AVG_NOTE_INSTRUCTION } from '@/lib/avg'
 
 describe('clienten query — buildClientWhere', () => {
   it('standaard verbergt afgeronde/gestopte cliënten', () => {
@@ -32,5 +35,12 @@ describe('clienten query — formatClientName (AVG: alleen initiaal achternaam)'
 
   it('zonder achternaam → alleen voornaam', () => {
     expect(formatClientName({ firstName: 'Sandra', lastName: null })).toBe('Sandra')
+  })
+})
+
+describe('ClientForm — AVG-notitie-instructie', () => {
+  it('toont de permanente notitie-instructie bij het notitieveld', () => {
+    render(<ClientForm action={async () => ({})} submitLabel="Toevoegen" />)
+    expect(screen.getByText(AVG_NOTE_INSTRUCTION)).toBeInTheDocument()
   })
 })
