@@ -8,6 +8,14 @@ import path from 'path'
 const RADIX = '@radix' + '-ui'
 const AS_CHILD = 'as' + 'Child'
 
+// Scan alleen CODE, geen commentaar — zodat een ADR-comment die `asChild` of
+// `@radix-ui` benoemt (ter uitleg) geen valse treffer oplevert.
+function stripComments(src: string): string {
+  return src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1')
+}
+
 function collectSources(dir: string): string[] {
   const out: string[] = []
   for (const entry of readdirSync(dir)) {
@@ -32,7 +40,7 @@ describe('ADR-0001 base-ui guard', () => {
     const roots = ['app', 'components', 'lib'].filter(exists)
     const offenders: string[] = []
     for (const file of roots.flatMap(collectSources)) {
-      const src = readFileSync(file, 'utf8')
+      const src = stripComments(readFileSync(file, 'utf8'))
       if (src.includes(RADIX)) offenders.push(`${file}: Radix-import`)
       if (new RegExp(`\\b${AS_CHILD}\\b`).test(src)) {
         offenders.push(`${file}: ${AS_CHILD}-prop`)
