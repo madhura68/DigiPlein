@@ -2,7 +2,7 @@
 title: M0–M2 MVP-implementatieplan DigiPlein
 status: approved
 author: Claude (Fable 5), in opdracht van JP
-version: "0.4"
+version: "0.5"
 date: 2026-06-11
 approved_by: JP (2026-06-11, na 2 externe reviewrondes + ADR-toets)
 basis: docs/mvp-spec.md §11 (backlog M0–M2), product-spec.md §6 (randvoorwaarden) en §10 (open vragen)
@@ -25,7 +25,7 @@ De open vragen uit de productspec zijn voor dit plan als volgt vastgezet:
 |---|---|---|
 | A1 | **Sessiemaximum Les op maat = 4**, maar **configureerbaar per cursus** (`courses.max_sessions`, leeg = onbeperkt). De "1 tot 6"-discrepantie van de site wordt een instelling, geen code. | Seed in ST-003 zet `LES_OP_MAAT.max_sessions = 4`; aanpasbaar via ST-104 zonder code. |
 | A2 | **Hostingkeuze is nog open** (Vercel EU + Neon vs. eigen Ubuntu-server). De bouw is hosting-agnostisch: lokale Postgres voor dev, geen platform-specifieke features. CI = `npm run verify && npm run build` via Forgejo Actions — de runner op git.jp-visser.nl is beschikbaar (bevestigd in review), dus `verify.yml` is vanaf ST-001 direct actief; npm-verify heeft geen docker-socket nodig. | **Besliskaart uiterlijk tijdens S-M1** (Vercel+Neon vs. eigen server): de demo aan het eind van M2 vereist deploy + demo-omgeving + dagelijkse versleutelde backup (mvp-spec §9) — geen onverwachte infra-klus laten worden. |
-| A3 | **Chat-window-contract = mvp-spec §10.** Het component zelf is extern en nog niet opgeleverd (open vraag §10.7: repo/status/deploymodel/agent-account bij JP). M2 bouwt de app-kant van het contract (sessie-doorgifte, guardrail-config, bevestigings- en audit-pad) plus een stub-/uit-modus achter een feature-flag. | ST-201 t/m ST-203 zijn afrondbaar zonder het externe component; de acceptatie "medewerker kan chatten" wordt pas demo-baar zodra JP het component aanlevert. |
+| A3 | **Chat-window-contract = mvp-spec §10.** Het externe component is **opgeleverd** (bevestigd door JP, 2026-06-11; de product-DoD wijst op Scrum4Me-functionaliteit: chat, docs, ideas, jobs). Integratie is **bewust uitgesteld naar de slotstap** (M2, ná M0/M1); de feature-flag blijft tot dan uit. M2 bouwt de app-kant van het contract (sessie-doorgifte, guardrail-config, bevestigings- en audit-pad) plus de stub-/uit-modus; deploy-details (URL/agent-account, §10.7) volgen bij ST-201. | ST-201 t/m ST-203 blijven afrondbaar los van het component; de demo "medewerker kan chatten" volgt bij de integratie als slotstap van M2. NB: de "scrum-rechten"-rollen uit de product-DoD zitten nog niet in het MVP-rollenmodel (mvp-spec §3: ADMIN/STAFF) — uitwerken bij de integratie. |
 | A4 | UVV-rol onbevestigd → `volunteers` bevat **alleen rooster-relevante velden** (mvp-spec §6); geen HR-gegevens. | Veldenscope ST-102 ligt vast. |
 | A5 | Alleen de **Centrale Bibliotheek** (Librijesteeg 4) in v1; geen locatiemodel in de UI. | Geen `location`-tabel in M0–M2; het lesmoment-model (M3) houdt de uitbreiding open. |
 | A6 | Rooster toont lesmoment **10:00–12:00** (marge 9:30–12:30 onbevestigd, niet getoond). | Alleen relevant voor defaults in `lesson_dates` (ST-003). |
@@ -243,6 +243,7 @@ Werkafspraken bij het aanmaken: stories krijgen de F-criteria als `acceptance_cr
 
 ## 7. Revisiehistorie
 
+- **0.5 (2026-06-11, na goedkeuring)** — A3 bijgewerkt: het chat-component is opgeleverd (JP); integratie bewust uitgesteld naar de slotstap van M2, feature-flag blijft tot dan uit. De product-DoD is door JP in Scrum4Me geregistreerd en wijst op Scrum4Me-functionaliteit (chat/docs/ideas/jobs) voor gebruikers met scrum-rechten — die rollen vallen buiten het MVP-rollenmodel (ADMIN/STAFF) en worden bij de M2-integratie uitgewerkt. Sprint-structuur aangemaakt (3 sprints / 3 PBI's / 15 stories / 36 taken); bouwvolgorde M0 → M1 → M2.
 - **0.4 (2026-06-11)** — ADR-0001 t/m ADR-0005 overgenomen van Scrum4Me ([docs/adr/](../adr/)) en het plan erop getoetst (nieuwe hardstop 6): ST-001 bouwt de shadcn-output om naar `@base-ui/react` met `render`-prop + lint-bewaking tegen `@radix-ui/*`/`asChild` (ADR-0001); `lib/enums.ts` als enige enum-conversiegrens, met exhaustiveness-test (ADR-0004); werkwijze aangescherpt van "branch per story" naar één branch per milestone met push pas na gebruikerstest (ADR-0003); Float `sort_order` vastgelegd als richtlijn voor toekomstige herordenbare lijsten — de MVP heeft er geen (ADR-0002); iron-session + bcryptjs was al conform (ADR-0005, formaliseert mvp-spec §9).
 - **0.3 (2026-06-11)** — reviewronde 2 verwerkt; beide reviewers bevestigen dat alle ronde-1-bevindingen correct in de plantekst zitten (geen regressies):
   - `scrum4me-server:claude` — AKKOORD MITS. Major: MD3-rollenstructuur uit de branding-annex overnemen → ST-002 herschreven rond rolparen (`on-*`-tekstkleur per achtergrondrol), annex-sectie "Advies: vertaling naar onze app" is de normatieve checklist, `error #962737` gekozen, shadcn-`primary` gemapt op zwart (oranje-als-tekst onrepresenteerbaar), secundaire knop/tekstlink/focus-stijl/typografie-schaal/plectrum-detail toegevoegd. Minors: a11y-check ook op M0-UI (ST-002/ST-004), ST-105 noemt het gedeelde bewijsscript, hostingkeuze als eigen mini-story met ADR.

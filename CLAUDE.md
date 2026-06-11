@@ -6,12 +6,10 @@ Interne web-app voor het digivaardigheidsteam van Bibliotheek Rotterdam (Central
 
 - **Naam:** DigiPlein
 - **product_id:** `cmq9hybds0003v27r99zvo92k`
-- **Definition of Done** *(voorstel — `definition_of_done` van het product in Scrum4Me is nog leeg; na akkoord van JP ook daar registreren)*:
-  1. `npm run verify && npm run build` groen (vanaf ST-001; verify = lint + typecheck + test)
-  2. Acceptatiecriteria van de story aantoonbaar groen (testbewijs of demo-stap benoemd)
-  3. AVG-hardstops gerespecteerd: bindend veldenmodel (product-spec §6.1), uitsluitend dummydata, auditregel waar van toepassing
-  4. Huisstijl-tokens toegepast; geen WCAG 2.2 AA-blokkers op geraakte schermen; UI-tekst NL/B1
-  5. Scrum4Me bijgewerkt: taakstatus + `log_implementation`/`log_commit`/`log_test_result`; nieuwe patronen/besluiten als product-doc
+- **Definition of Done** *(geregistreerd in Scrum4Me door JP, 2026-06-11 — licht geredigeerde weergave, inhoudelijk identiek)*: een bibliotheekmedewerker kan inloggen en de UI van DigiPlein volledig gebruiken. Heeft de gebruiker scrum-rechten (product owner, scrum master of scrum-teamlid), dan kan hij de Scrum4Me-functionaliteit zien en gebruiken — chat, docs, ideas, jobs — en gebruikt hij die om de app te verfijnen.
+  - NB: de scrum-rechten-rollen zitten nog niet in het MVP-rollenmodel (mvp-spec §3: ADMIN/STAFF); uitwerking hoort bij de chat-window-integratie (slotstap M2, contract mvp-spec §10).
+  - Werkwijze-gates per story (verify+build groen, acceptatiecriteria aantoonbaar, AVG-hardstops, a11y-check, Scrum4Me-logging): zie de hardstops + het gedeelde patroon in [docs/plans/M0-M2-mvp-implementatieplan.md](docs/plans/M0-M2-mvp-implementatieplan.md)
+- **Bouwvolgorde:** sprint S-2026-06-11-1 (M0) → -2 (M1) → -3 (M2; chat-integratie als slotstap). Let op: zolang meerdere sprints OPEN staan kan `get_claude_context` de nieuwste als `active_sprint` tonen — begin bij M0/ST-001 (story-codes ST-001 t/m ST-004 in sprint -1).
 
 Volgt de globale Scrum4Me-methodiek (`~/.claude/rules/scrum4me-methodiek.md` voor Claude; de "Scrum4Me-methodiek"-sectie in `~/.codex/AGENTS.md` voor Codex). Niet-triviaal werk: plan → Sprint/PBI/Story/Taak via de `scrum4me` MCP → `update_task_status` per laag → docs in de DB.
 
