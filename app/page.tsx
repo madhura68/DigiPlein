@@ -1,19 +1,29 @@
 import { Button } from '@/components/ui/button'
-import { logout } from './logout/actions'
+import { requireStaff } from '@/lib/auth'
 
-export default function Home() {
+import { logout } from './logout/actions'
+import { StartTiles } from './start-tiles'
+
+export default async function Home() {
+  const session = await requireStaff()
+
   return (
-    <main className="mx-auto flex min-h-[70vh] max-w-2xl flex-col justify-center gap-4 p-8">
-      <h1 className="text-3xl font-bold">DigiPlein</h1>
-      <p className="text-base text-muted-foreground">
-        Het fundament staat. De huisstijl, het datamodel en de schermen volgen in
-        de komende stories.
-      </p>
-      <form action={logout}>
-        <Button type="submit" variant="secondary">
-          Uitloggen
-        </Button>
-      </form>
+    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10">
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl">Welkom terug, {session.name}.</h1>
+          <p className="text-muted-foreground">
+            Kies waar je mee aan de slag wilt.
+          </p>
+        </div>
+        <form action={logout}>
+          <Button type="submit" variant="secondary">
+            Uitloggen
+          </Button>
+        </form>
+      </header>
+
+      <StartTiles role={session.role} />
     </main>
   )
 }
