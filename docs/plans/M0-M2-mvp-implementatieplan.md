@@ -2,7 +2,7 @@
 title: M0–M2 MVP-implementatieplan DigiPlein
 status: draft
 author: Claude (Fable 5), in opdracht van JP
-version: "0.3"
+version: "0.4"
 date: 2026-06-11
 basis: docs/mvp-spec.md §11 (backlog M0–M2), product-spec.md §6 (randvoorwaarden) en §10 (open vragen)
 scope: M0 Fundament · M1 Vier kerntabellen · M2 Chat-window — M3+ bewust níét uitgewerkt
@@ -12,7 +12,7 @@ scope: M0 Fundament · M1 Vier kerntabellen · M2 Chat-window — M3+ bewust ní
 
 > **Doel:** de MVP uit [docs/mvp-spec.md](../mvp-spec.md) bouwbaar maken in losse, per sessie afrondbare taken: datafundament + beheer van de vier kerntabellen + chat-window-integratie, AVG-by-design, in de huisstijl van Bibliotheek Rotterdam.
 >
-> **Uitvoering:** na goedkeuring wordt dit plan omgezet in Scrum4Me (sprint per milestone, PBI per milestone, story per ST-taak, taken per story — zie §"Sprint-structuur" onderaan). Werkwijze per story: branch → taken in volgorde → `npm run verify && npm run build` → commit per laag → status bijwerken via MCP. Geen push zonder akkoord van JP.
+> **Uitvoering:** na goedkeuring wordt dit plan omgezet in Scrum4Me (sprint per milestone, PBI per milestone, story per ST-taak, taken per story — zie §"Sprint-structuur" onderaan). Werkwijze: **één branch per milestone** (ADR-0003: `feat/m0-fundament`, `feat/m1-kerntabellen`, `feat/m2-chat-window`); per story de taken in volgorde → `npm run verify && npm run build` → commit per laag → status bijwerken via MCP. Push + één PR per milestone (Forgejo), nooit automatisch — pas na de gebruikerstest van het milestone en expliciete bevestiging van JP.
 
 ---
 
@@ -40,6 +40,7 @@ De open vragen uit de productspec zijn voor dit plan als volgt vastgezet:
 3. **Huisstijl-tokens** komen uit [docs/research/branding-bibliotheek-rotterdam.md](../research/branding-bibliotheek-rotterdam.md) en staan centraal in `app/styles/theme.css`; geen losse hexcodes in componenten — componenten gebruiken uitsluitend MD3-rolparen (achtergrondrol + bijbehorende `on-*`-tekstkleur); geen logo van Bibliotheek Rotterdam zonder schriftelijke toestemming.
 4. **Oranje `#ee7203` nooit als tekstkleur op wit** (2,98:1) — voor oranje tekst bestaat het token "primary-text" `#b35400` (5,0:1); wit op oranje alleen groot/bold.
 5. Alles achter login; foutcodes 400 (parse) / 422 (Zod) / 401–403 (auth/rol); rollen server-side afgedwongen.
+6. **ADR-0001 t/m ADR-0005** ([docs/adr/](../adr/), overgenomen van Scrum4Me) zijn bindend: `@base-ui/react` met `render`-prop (geen `@radix-ui/*`/`asChild`), Float `sort_order` voor elke toekomstige herordenbare lijst, één branch per milestone met push-na-akkoord, enum-conversie uitsluitend via `lib/enums.ts`, iron-session + bcryptjs.
 
 ---
 
@@ -67,6 +68,7 @@ DigiPlein/
 ├── lib/
 │   ├── env.ts                      # Zod-gevalideerde env (ST-003)
 │   ├── db.ts                       # Prisma-singleton (ST-003)
+│   ├── enums.ts                    # NL-labels + enum-mappers — enige conversiegrens (ADR-0004)
 │   ├── session.ts                  # iron-session helpers (ST-004)
 │   ├── auth.ts                     # requireStaff()/requireAdmin() (ST-004)
 │   ├── audit.ts                    # writeAuditLog() + summary-conventie (ST-103/106)
@@ -89,9 +91,9 @@ Conventies: Engelse tabel-/kolom-/codenamen, Nederlandse UI-labels (B1, je-vorm)
 
 ### ST-001 Scaffold
 
-- **Aanpak.** Next.js 16 (App Router) + React 19 + TypeScript strict opzetten met `create-next-app`, Tailwind CSS v4 en shadcn/ui (`shadcn init`, base-componenten button/input/card/dialog/table). Vitest + Testing Library + jsdom configureren; `server-only` mocken via alias (zelfde aanpak als Scrum4Me). Scripts: `dev`, `build`, `test` (`vitest run`), `lint`, `typecheck` (`tsc --noEmit`) en `verify` = lint + typecheck + test. `.env.example` met `DATABASE_URL`, `SESSION_SECRET`, `APP_BASE_URL`. Forgejo Actions-workflow `verify.yml` is direct actief — de runner op git.jp-visser.nl draait (A2); npm-verify heeft geen docker-socket nodig, eerste CI-run is groen bij de eerste push.
+- **Aanpak.** Next.js 16 (App Router) + React 19 + TypeScript strict opzetten met `create-next-app`, Tailwind CSS v4 en shadcn/ui (`shadcn init`, base-componenten button/input/card/dialog/table). De shadcn-output wordt direct omgebouwd naar `@base-ui/react` met het `render`-prop-patroon (ADR-0001) — geen `@radix-ui/*`-dependency in `package.json`. Vitest + Testing Library + jsdom configureren; `server-only` mocken via alias (zelfde aanpak als Scrum4Me). Scripts: `dev`, `build`, `test` (`vitest run`), `lint`, `typecheck` (`tsc --noEmit`) en `verify` = lint + typecheck + test. `.env.example` met `DATABASE_URL`, `SESSION_SECRET`, `APP_BASE_URL`. Forgejo Actions-workflow `verify.yml` is direct actief — de runner op git.jp-visser.nl draait (A2); npm-verify heeft geen docker-socket nodig, eerste CI-run is groen bij de eerste push.
 - **Bestanden.** `package.json`, `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `vitest.config.ts`, `components.json`, `app/layout.tsx`, `app/page.tsx` (placeholder), `.env.example`, `.forgejo/workflows/verify.yml`, `__tests__/smoke.test.tsx`.
-- **Testaanpak.** Eén smoke-test (render van de placeholder-page) om de hele keten vitest+jsdom+TSX te bewijzen; daarna `npm run verify && npm run build`.
+- **Testaanpak.** Eén smoke-test (render van de placeholder-page) om de hele keten vitest+jsdom+TSX te bewijzen; lint-/testregel die elke `@radix-ui/*`-import en elk `asChild`-gebruik laat falen (ADR-0001); daarna `npm run verify && npm run build`.
 - **Afhankelijkheden.** Geen (startpunt).
 - **Klaar wanneer.** `npm run dev` en `npm run verify` draaien schoon (mvp-spec); build groen; smoke-test slaagt.
 
@@ -105,9 +107,9 @@ Conventies: Engelse tabel-/kolom-/codenamen, Nederlandse UI-labels (B1, je-vorm)
 
 ### ST-003 Database & schema
 
-- **Aanpak.** Eén Prisma-schema met **alle tien** tabellen uit mvp-spec §6 — `staff_members`, `volunteers`, `clients`, `courses`, `learning_tracks`, `lesson_dates`, `roster_entries`, `absences`, `attendances`, `audit_logs` — inclusief de M3/M4-tabellen (bewuste keuze uit de spec: uitbreiden zonder verbouwing). Enums: `STAFF_ROLE`, `COURSE_ASSESSMENT`, `CLIENT_STATUS`, `TRACK_STATUS`, `LESSON_STATUS`, `ROSTER_STATUS`, `ACTOR_TYPE` (UPPER_SNAKE, via `@map` naar snake_case kolommen). Alle tabellen `id uuid pk default gen_random_uuid()` (`@default(dbgenerated("gen_random_uuid()"))`), `created_at`/`updated_at timestamptz`. Constraints uit de spec: uniques (`courses.code`, `lesson_dates.date`, `(lesson_date_id, volunteer_id)`, `(lesson_date_id, learning_track_id)`, e-mails), **cascade delete** `clients → learning_tracks → attendances` (fundament voor F-05), `courses → learning_tracks` Restrict; CHECK-constraints (`max_sessions > 0`, `ends_on ≥ starts_on`) als raw SQL in de migratie (Prisma kent geen CHECK), plus de app-regel "max. één `ACTIEF` traject per (client, course)" (mvp-spec §6) als **partial unique index** (`WHERE status = 'ACTIEF'`) in dezelfde migratie — M4-proof, consistent met "uitbreiden zonder verbouwing". `lib/env.ts` (Zod) en `lib/db.ts` (singleton). Seed (`prisma/seed.ts`): de twee cursussen (`KLIK_EN_TIK` max leeg/∞, `LES_OP_MAAT` max 4 — A1, beide 120 min di+do) + 1 admin (wachtwoord via `SEED_ADMIN_PASSWORD`-env, bcrypt-hash via `bcryptjs` — conform mvp-spec §9, geen native build). Lokale dev-Postgres via Docker (`docker-compose.dev.yml`); geen hostingkeuze nodig (A2).
-- **Bestanden.** `prisma/schema.prisma`, `prisma/migrations/<ts>_init/migration.sql` (incl. CHECK- en partial-index-SQL), `prisma/seed.ts`, `scripts/verify-constraints.ts`, `lib/env.ts`, `lib/db.ts`, `docker-compose.dev.yml`, `.env.example` (aangevuld), `__tests__/lib/env.test.ts`.
-- **Testaanpak.** `prisma validate` in verify-pad; `prisma migrate reset --force` + seed op lege DB als bewijs (migratie + seed idempotent herhaalbaar); unique-, CHECK-, partial-index- en cascade-gedrag aantonen met een **gecommit, herhaalbaar bewijsscript** `scripts/verify-constraints.ts` tegen de dev-DB (duplicate `courses.code` → fout; tweede `ACTIEF` traject per client+course → fout; delete client met traject → traject weg) — ST-105 hergebruikt ditzelfde cascade-bewijs. Unit-test op `lib/env.ts` (ontbrekende var → duidelijke fout).
+- **Aanpak.** Eén Prisma-schema met **alle tien** tabellen uit mvp-spec §6 — `staff_members`, `volunteers`, `clients`, `courses`, `learning_tracks`, `lesson_dates`, `roster_entries`, `absences`, `attendances`, `audit_logs` — inclusief de M3/M4-tabellen (bewuste keuze uit de spec: uitbreiden zonder verbouwing). Enums: `STAFF_ROLE`, `COURSE_ASSESSMENT`, `CLIENT_STATUS`, `TRACK_STATUS`, `LESSON_STATUS`, `ROSTER_STATUS`, `ACTOR_TYPE` (UPPER_SNAKE, via `@map` naar snake_case kolommen). Alle tabellen `id uuid pk default gen_random_uuid()` (`@default(dbgenerated("gen_random_uuid()"))`), `created_at`/`updated_at timestamptz`. Constraints uit de spec: uniques (`courses.code`, `lesson_dates.date`, `(lesson_date_id, volunteer_id)`, `(lesson_date_id, learning_track_id)`, e-mails), **cascade delete** `clients → learning_tracks → attendances` (fundament voor F-05), `courses → learning_tracks` Restrict; CHECK-constraints (`max_sessions > 0`, `ends_on ≥ starts_on`) als raw SQL in de migratie (Prisma kent geen CHECK), plus de app-regel "max. één `ACTIEF` traject per (client, course)" (mvp-spec §6) als **partial unique index** (`WHERE status = 'ACTIEF'`) in dezelfde migratie — M4-proof, consistent met "uitbreiden zonder verbouwing". `lib/env.ts` (Zod), `lib/db.ts` (singleton) en `lib/enums.ts`: de Nederlandse weergavelabels en álle enum-mappers met exhaustive switches (ADR-0004 — nergens anders inline mapping of case-coercion). Seed (`prisma/seed.ts`): de twee cursussen (`KLIK_EN_TIK` max leeg/∞, `LES_OP_MAAT` max 4 — A1, beide 120 min di+do) + 1 admin (wachtwoord via `SEED_ADMIN_PASSWORD`-env, bcrypt-hash via `bcryptjs` — conform mvp-spec §9, geen native build). Lokale dev-Postgres via Docker (`docker-compose.dev.yml`); geen hostingkeuze nodig (A2).
+- **Bestanden.** `prisma/schema.prisma`, `prisma/migrations/<ts>_init/migration.sql` (incl. CHECK- en partial-index-SQL), `prisma/seed.ts`, `scripts/verify-constraints.ts`, `lib/env.ts`, `lib/db.ts`, `lib/enums.ts`, `docker-compose.dev.yml`, `.env.example` (aangevuld), `__tests__/lib/env.test.ts`, `__tests__/lib/enums.test.ts`.
+- **Testaanpak.** `prisma validate` in verify-pad; `prisma migrate reset --force` + seed op lege DB als bewijs (migratie + seed idempotent herhaalbaar); unique-, CHECK-, partial-index- en cascade-gedrag aantonen met een **gecommit, herhaalbaar bewijsscript** `scripts/verify-constraints.ts` tegen de dev-DB (duplicate `courses.code` → fout; tweede `ACTIEF` traject per client+course → fout; delete client met traject → traject weg) — ST-105 hergebruikt ditzelfde cascade-bewijs. Unit-test op `lib/env.ts` (ontbrekende var → duidelijke fout) en op `lib/enums.ts` (elke enumwaarde heeft een NL-label; exhaustiveness).
 - **Afhankelijkheden.** ST-001.
 - **Klaar wanneer.** Migratie + seed draaien op lege DB; unique-constraints aantoonbaar (mvp-spec); cascade aantoonbaar via het gecommitte bewijsscript (voorschot op ST-105).
 
@@ -224,7 +226,7 @@ ST-001 ─→ ST-002 ─→ ST-004 ─→ ST-101
                                           (extern: chat-component, JP)
 ```
 
-Per story: `npm run verify && npm run build` vóór afronding; commit per logische laag; push + PR (Forgejo) pas na akkoord van JP. MVP-DoD: mvp-spec §12.
+Per story: `npm run verify && npm run build` vóór afronding; commit per logische laag op de **milestone-branch** (ADR-0003: `feat/m0-fundament` / `feat/m1-kerntabellen` / `feat/m2-chat-window`); push + één PR per milestone (Forgejo) pas na de gebruikerstest en akkoord van JP. MVP-DoD: mvp-spec §12.
 
 ## 6. Sprint-structuur (aan te maken ná goedkeuring — stap 4 van de opdracht)
 
@@ -240,6 +242,7 @@ Werkafspraken bij het aanmaken: stories krijgen de F-criteria als `acceptance_cr
 
 ## 7. Revisiehistorie
 
+- **0.4 (2026-06-11)** — ADR-0001 t/m ADR-0005 overgenomen van Scrum4Me ([docs/adr/](../adr/)) en het plan erop getoetst (nieuwe hardstop 6): ST-001 bouwt de shadcn-output om naar `@base-ui/react` met `render`-prop + lint-bewaking tegen `@radix-ui/*`/`asChild` (ADR-0001); `lib/enums.ts` als enige enum-conversiegrens, met exhaustiveness-test (ADR-0004); werkwijze aangescherpt van "branch per story" naar één branch per milestone met push pas na gebruikerstest (ADR-0003); Float `sort_order` vastgelegd als richtlijn voor toekomstige herordenbare lijsten — de MVP heeft er geen (ADR-0002); iron-session + bcryptjs was al conform (ADR-0005, formaliseert mvp-spec §9).
 - **0.3 (2026-06-11)** — reviewronde 2 verwerkt; beide reviewers bevestigen dat alle ronde-1-bevindingen correct in de plantekst zitten (geen regressies):
   - `scrum4me-server:claude` — AKKOORD MITS. Major: MD3-rollenstructuur uit de branding-annex overnemen → ST-002 herschreven rond rolparen (`on-*`-tekstkleur per achtergrondrol), annex-sectie "Advies: vertaling naar onze app" is de normatieve checklist, `error #962737` gekozen, shadcn-`primary` gemapt op zwart (oranje-als-tekst onrepresenteerbaar), secundaire knop/tekstlink/focus-stijl/typografie-schaal/plectrum-detail toegevoegd. Minors: a11y-check ook op M0-UI (ST-002/ST-004), ST-105 noemt het gedeelde bewijsscript, hostingkeuze als eigen mini-story met ADR.
   - `mac:codex` — AKKOORD (geen majors). Minors: a11y M0 expliciet (zelfde fix), audit-representatie in ST-203 vastgelegd als twee gekoppelde regels (STAFF/`CONFIRM_CHAT_CHANGE` + CHAT_AGENT-uitvoering, gekoppeld op `chat_request_id`).
