@@ -30,3 +30,13 @@ export function formatClientName(client: {
   const initial = client.lastName?.trim().charAt(0)
   return initial ? `${client.firstName} ${initial.toUpperCase()}.` : client.firstName
 }
+
+// Volledige naam — alleen op het detailscherm en als bevestigingstekst bij de
+// definitieve verwijdering (naam-overtypen, F-05). Eén bron zodat het detailscherm,
+// de bevestigingsdialoog en de delete-action exact dezelfde naam vergelijken.
+export function clientFullName(client: {
+  firstName: string
+  lastName?: string | null
+}): string {
+  return client.lastName ? `${client.firstName} ${client.lastName}` : client.firstName
+}

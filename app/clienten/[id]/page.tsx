@@ -1,11 +1,14 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
+import { buttonVariants } from '@/components/ui/button'
 import { requireStaff } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 import { updateClient } from '../actions'
 import { ClientForm } from '../clienten-form'
+import { clientFullName } from '../query'
 
 function toDateInput(value: Date | null): string | undefined {
   return value ? value.toISOString().slice(0, 10) : undefined
@@ -16,7 +19,7 @@ export default async function ClientDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
-  await requireStaff()
+  const session = await requireStaff()
   const { id } = await params
   const client = await prisma.client.findUnique({ where: { id } })
   if (!client) notFound()
@@ -30,10 +33,7 @@ export default async function ClientDetailPage({
         >
           ← Terug naar overzicht
         </Link>
-        <h1 className="text-3xl">
-          {client.firstName}
-          {client.lastName ? ` ${client.lastName}` : ''}
-        </h1>
+        <h1 className="text-3xl">{clientFullName(client)}</h1>
       </div>
 
       <ClientForm
@@ -55,6 +55,26 @@ export default async function ClientDetailPage({
           notes: client.notes,
         }}
       />
+
+      <section className="flex flex-col gap-4 border-t border-outline-variant pt-6">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-xl">AVG-rechten</h2>
+          <p className="text-sm text-muted-foreground">
+            Inzage- en wisverzoeken zijn één klik.
+          </p>
+        </div>
+        <div>
+          <Link
+            href={`/clienten/${client.id}/export`}
+            className={buttonVariants({ variant: 'secondary' })}
+          >
+            Exporteer gegevens
+          </Link>
+        </div>
+        {session.role === 'ADMIN' ? (
+          <ConfirmDeleteDialog id={client.id} fullName={clientFullName(client)} />
+        ) : null}
+      </section>
     </main>
   )
 }

@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="nl" className={poppins.variable}>
       <body className="min-h-screen antialiased">
-        <header className="border-b border-outline-variant">
+        <header className="border-b border-outline-variant print:hidden">
           <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
             <span className="text-xl font-bold">{APP_NAME}</span>
             {/* Navigatie-items volgen per beheer-story (ST-101 e.v.). */}

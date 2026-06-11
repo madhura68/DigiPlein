@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 import {
@@ -8,8 +9,10 @@ import {
   clientUpdatedSummary,
   writeAuditLog,
 } from '@/lib/audit'
-import { requireStaff } from '@/lib/auth'
+import { requireAdmin, requireStaff } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+
+import { clientFullName } from './query'
 
 export type ClientActionState = {
   error?: string
@@ -175,4 +178,44 @@ export async function updateClient(
   revalidatePath('/clienten')
   revalidatePath(`/clienten/${id}`)
   return { ok: true }
+}
+
+const deleteSchema = z
+  .object({ id: z.string().min(1), confirmName: z.string().min(1) })
+  .strict()
+
+// F-05 definitieve verwijdering: ADMIN-only, naam-overtypen-bevestiging, DB-cascade
+// (client → tracks → attendances, ST-003) en een persoonsgegevens-vríje auditregel
+// (alleen intern id + tijdstip + uitvoerder; geen naam in de summary).
+export async function deleteClient(
+  _prev: ClientActionState,
+  formData: FormData
+): Promise<ClientActionState> {
+  const session = await requireAdmin()
+  const parsed = deleteSchema.safeParse({
+    id: formData.get('id'),
+    confirmName: formData.get('confirmName'),
+  })
+  if (!parsed.success) return { error: 'Ongeldig verzoek.', status: 422 }
+
+  const existing = await prisma.client.findUnique({ where: { id: parsed.data.id } })
+  if (!existing) return { error: 'Cliënt niet gevonden.', status: 404 }
+  if (parsed.data.confirmName.trim() !== clientFullName(existing)) {
+    return {
+      error: 'De ingetypte naam komt niet overeen met de cliënt.',
+      status: 422,
+    }
+  }
+
+  await prisma.client.delete({ where: { id: parsed.data.id } })
+  await writeAuditLog({
+    actorType: 'STAFF',
+    actorId: session.staffId,
+    action: 'DELETE',
+    entity: 'client',
+    entityId: parsed.data.id,
+    summary: 'Cliënt definitief verwijderd',
+  })
+  revalidatePath('/clienten')
+  redirect('/clienten')
 }
