@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import "./styles/theme.css";
+
+/*
+ * Merk-oranje (#ee7203) uitsluitend als VLAK, RAND of FOCUS — nooit als tekst
+ * (hardstop 4: oranje op wit = 2,98:1). Bewust géén `text-brand`-utility; de
+ * enige toegestane oranje tekst is `text-primary-text` (#b35400). De waarde
+ * komt uit het token `--brand` in app/styles/theme.css, dus geen hex hier.
+ */
+@utility bg-brand {
+  background-color: var(--brand);
+}
+@utility border-brand {
+  border-color: var(--brand);
+}
+@utility ring-brand {
+  --tw-ring-color: var(--brand);
+}
+@utility outline-brand {
+  outline-color: var(--brand);
+}

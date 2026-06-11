@@ -1,0 +1,23 @@
+# Lokale dev-Postgres voor DigiPlein (A2 — hosting-agnostisch; uitsluitend dummydata).
+# Start:  docker compose -f docker-compose.dev.yml up -d
+# Stop:   docker compose -f docker-compose.dev.yml down
+services:
+  db:
+    image: postgres:17
+    container_name: digiplein-db
+    environment:
+      POSTGRES_USER: digiplein
+      POSTGRES_PASSWORD: digiplein
+      POSTGRES_DB: digiplein
+    ports:
+      - "5432:5432"
+    volumes:
+      - digiplein-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U digiplein"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  digiplein-db-data:

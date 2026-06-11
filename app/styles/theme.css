@@ -1,0 +1,160 @@
+/*
+ * Huisstijl Bibliotheek Rotterdam — MD3-rolparen.
+ * Normatieve bron: docs/research/branding-bibliotheek-rotterdam.md,
+ * sectie "Advies: vertaling naar onze app".
+ *
+ * HARDSTOP 3: dit is het ENIGE bestand dat hex-literals mag bevatten. Componenten
+ * gebruiken uitsluitend rolparen (achtergrondrol + bijbehorende on-*-tekstkleur).
+ * HARDSTOP 4: oranje #ee7203 nooit als tekstkleur op wit (2,98:1). De enige
+ * toegestane oranje tekst is `--primary-text` (#b35400, 5,0:1). Merk-oranje is
+ * een vlak/rand/focus-token (`--brand`) zonder text-utility (zie globals.css).
+ */
+
+:root {
+  /* Merk-oranje — uitsluitend vlak/rand/focus (geen text-utility) */
+  --brand: #ee7203;
+  --brand-hover: #d56603;
+
+  /* shadcn `primary` = ZWART: de huisstijl-primaire knop. Zo levert text-primary
+     nooit oranje op (de scan-test bewaakt alleen de uitzonderingen). */
+  --primary: #000000;
+  --primary-foreground: #ffffff;
+
+  /* Oranje container (perzik) met zwarte tekst (13,4:1) */
+  --primary-container: #fac494;
+  --primary-container-foreground: #000000;
+
+  /* De ENIGE toegestane oranje tekstkleur op wit (5,0:1) */
+  --primary-text: #b35400;
+
+  /* Secondary — donkergrijs footer-vlak */
+  --secondary: #38383a;
+  --secondary-foreground: #ffffff;
+
+  /* Tertiary — teal */
+  --tertiary: #65baa8;
+  --tertiary-foreground: #000000;
+
+  /* Surface */
+  --background: #ffffff;
+  --foreground: #000000;
+  --surface-variant: #eeeff5;
+  --surface-container: #f8f8f8;
+  --surface-hover: #ededed;
+
+  /* Card */
+  --card: #ffffff;
+  --card-foreground: #000000;
+
+  /* Gedempte tekst / outlines / borders */
+  --muted: #f8f8f8;
+  --muted-foreground: #565656;
+  --outline: #979797;
+  --outline-variant: #eeeff5;
+  --border: #eeeff5;
+  --input: #eeeff5;
+
+  /* Error — merk-conform bordeaux, wit 8,0:1 */
+  --error: #962737;
+  --error-foreground: #ffffff;
+
+  /* Succes / status */
+  --success: #28a84f;
+  --success-foreground: #ffffff;
+  --success-text: #155927;
+
+  /* Accenten */
+  --accent-yellow: #e2b41d;
+  --accent-blue: #79c4e3;
+  --accent-indigo: #585f98;
+
+  /* Vorm */
+  --radius-pill: 9999px;
+  --radius-field: 24px;
+  --radius-card: 6px;
+  --corner-plectrum: 100px;
+
+  /* Gewichten */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface-variant: var(--surface-variant);
+  --color-surface-container: var(--surface-container);
+  --color-surface-hover: var(--surface-hover);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-container: var(--primary-container);
+  --color-primary-container-foreground: var(--primary-container-foreground);
+  /* De enige oranje tekst-utility: text-primary-text (#b35400) */
+  --color-primary-text: var(--primary-text);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-foreground: var(--tertiary-foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-outline: var(--outline);
+  --color-outline-variant: var(--outline-variant);
+  --color-border: var(--border);
+  --color-input: var(--input);
+
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-text: var(--success-text);
+
+  --color-accent-yellow: var(--accent-yellow);
+  --color-accent-blue: var(--accent-blue);
+  --color-accent-indigo: var(--accent-indigo);
+
+  --radius-pill: var(--radius-pill);
+  --radius-field: var(--radius-field);
+  --radius-card: var(--radius-card);
+
+  --font-sans: var(--font-poppins), Arial, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-size: clamp(1rem, 0.94rem + 0.27vw, 1.125rem); /* 16 → 18px */
+    line-height: 1.556;
+  }
+
+  /* Alle headings Poppins 700; hiërarchie via grootte (annex-typografie). */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: var(--font-weight-bold);
+  }
+  h1 {
+    font-size: clamp(3rem, 2.4rem + 3vw, 3.75rem); /* 48 → 60px */
+    line-height: 1;
+  }
+  h2 {
+    font-size: clamp(2rem, 1.6rem + 2vw, 2.5rem); /* 32 → 40px */
+    line-height: 1.3;
+  }
+  h3 {
+    font-size: 1.75rem; /* 28px */
+    line-height: 1.3125;
+  }
+  h4 {
+    font-size: 1.25rem; /* 20px */
+    line-height: 1.5;
+  }
+}
