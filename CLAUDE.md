@@ -6,7 +6,12 @@ Interne web-app voor het digivaardigheidsteam van Bibliotheek Rotterdam (Central
 
 - **Naam:** DigiPlein
 - **product_id:** `cmq9hybds0003v27r99zvo92k`
-- **Definition of Done:** — (zie het product in Scrum4Me via `get_claude_context`; nog niet in dit bestand overgenomen)
+- **Definition of Done** *(voorstel — `definition_of_done` van het product in Scrum4Me is nog leeg; na akkoord van JP ook daar registreren)*:
+  1. `npm run verify && npm run build` groen (vanaf ST-001; verify = lint + typecheck + test)
+  2. Acceptatiecriteria van de story aantoonbaar groen (testbewijs of demo-stap benoemd)
+  3. AVG-hardstops gerespecteerd: bindend veldenmodel (product-spec §6.1), uitsluitend dummydata, auditregel waar van toepassing
+  4. Huisstijl-tokens toegepast; geen WCAG 2.2 AA-blokkers op geraakte schermen; UI-tekst NL/B1
+  5. Scrum4Me bijgewerkt: taakstatus + `log_implementation`/`log_commit`/`log_test_result`; nieuwe patronen/besluiten als product-doc
 
 Volgt de globale Scrum4Me-methodiek (`~/.claude/rules/scrum4me-methodiek.md` voor Claude; de "Scrum4Me-methodiek"-sectie in `~/.codex/AGENTS.md` voor Codex). Niet-triviaal werk: plan → Sprint/PBI/Story/Taak via de `scrum4me` MCP → `update_task_status` per laag → docs in de DB.
 
