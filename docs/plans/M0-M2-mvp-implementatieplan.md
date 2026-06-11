@@ -1,9 +1,10 @@
 ---
 title: M0–M2 MVP-implementatieplan DigiPlein
-status: draft
+status: approved
 author: Claude (Fable 5), in opdracht van JP
 version: "0.4"
 date: 2026-06-11
+approved_by: JP (2026-06-11, na 2 externe reviewrondes + ADR-toets)
 basis: docs/mvp-spec.md §11 (backlog M0–M2), product-spec.md §6 (randvoorwaarden) en §10 (open vragen)
 scope: M0 Fundament · M1 Vier kerntabellen · M2 Chat-window — M3+ bewust níét uitgewerkt
 ---
