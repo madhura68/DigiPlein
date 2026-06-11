@@ -1,0 +1,237 @@
+---
+title: M0–M2 MVP-implementatieplan DigiPlein
+status: draft
+author: Claude (Fable 5), in opdracht van JP
+version: "0.1"
+date: 2026-06-11
+basis: docs/mvp-spec.md §11 (backlog M0–M2), product-spec.md §6 (randvoorwaarden) en §10 (open vragen)
+scope: M0 Fundament · M1 Vier kerntabellen · M2 Chat-window — M3+ bewust níét uitgewerkt
+---
+
+# M0–M2 MVP-implementatieplan — DigiPlein
+
+> **Doel:** de MVP uit [docs/mvp-spec.md](../mvp-spec.md) bouwbaar maken in losse, per sessie afrondbare taken: datafundament + beheer van de vier kerntabellen + chat-window-integratie, AVG-by-design, in de huisstijl van Bibliotheek Rotterdam.
+>
+> **Uitvoering:** na goedkeuring wordt dit plan omgezet in Scrum4Me (sprint per milestone, PBI per milestone, story per ST-taak, taken per story — zie §"Sprint-structuur" onderaan). Werkwijze per story: branch → taken in volgorde → `npm run verify && npm run build` → commit per laag → status bijwerken via MCP. Geen push zonder akkoord van JP.
+
+---
+
+## 0. Aannames (uit product-spec §10 — expliciet, gelden tot tegenbericht)
+
+De open vragen uit de productspec zijn voor dit plan als volgt vastgezet:
+
+| # | Aanname | Gevolg voor M0–M2 |
+|---|---|---|
+| A1 | **Sessiemaximum Les op maat = 4**, maar **configureerbaar per cursus** (`courses.max_sessions`, leeg = onbeperkt). De "1 tot 6"-discrepantie van de site wordt een instelling, geen code. | Seed in ST-003 zet `LES_OP_MAAT.max_sessions = 4`; aanpasbaar via ST-104 zonder code. |
+| A2 | **Hostingkeuze is nog open** (Vercel EU + Neon vs. eigen Ubuntu-server). De bouw is hosting-agnostisch: lokale Postgres voor dev, geen platform-specifieke features. CI = `npm run verify && npm run build`; een Forgejo Actions-workflow wordt klaargezet maar activering hangt af van runner-beschikbaarheid (uitzoekpunt in ST-001, geen blokkade — lokale verify is de gate). | Keuze nodig vóór eerste deploy (eind M2/demo), niet vóór de bouwstart. |
+| A3 | **Chat-window-contract = mvp-spec §10.** Het component zelf is extern en nog niet opgeleverd (open vraag §10.7: repo/status/deploymodel/agent-account bij JP). M2 bouwt de app-kant van het contract (sessie-doorgifte, guardrail-config, bevestigings- en audit-pad) plus een stub-/uit-modus achter een feature-flag. | ST-201 t/m ST-203 zijn afrondbaar zonder het externe component; de acceptatie "medewerker kan chatten" wordt pas demo-baar zodra JP het component aanlevert. |
+| A4 | UVV-rol onbevestigd → `volunteers` bevat **alleen rooster-relevante velden** (mvp-spec §6); geen HR-gegevens. | Veldenscope ST-102 ligt vast. |
+| A5 | Alleen de **Centrale Bibliotheek** (Librijesteeg 4) in v1; geen locatiemodel in de UI. | Geen `location`-tabel in M0–M2; het lesmoment-model (M3) houdt de uitbreiding open. |
+| A6 | Rooster toont lesmoment **10:00–12:00** (marge 9:30–12:30 onbevestigd, niet getoond). | Alleen relevant voor defaults in `lesson_dates` (ST-003). |
+| A7 | Schaal: 5–20 vrijwilligers, **min 2 / max 4** per lesmoment (configureerbaar; pas gebruikt in M3). | Geen schaalmaatregelen; bezettings-config buiten M0–M2. |
+| A8 | **"DigiPlein" is werknaam**; neutraal presenteren ("cursusplanning"), nooit "register". App-naam als constante op één plek zodat hernoemen één regel is. | ST-002 (layout/titel) en B1-teksten. |
+| A9 | Governance-route (FG/verwerkersovereenkomst) loopt parallel; **livegang met echte data is geen onderdeel van M0–M2** (dat is ST-505, M5). | Hardstop "dummydata" hieronder. |
+| A10 | Oefenen.nl-export onbekend → speelt pas in M4+ (geen afhankelijkheid in dit plan). | — |
+
+### Hardstops (gelden voor élke taak hieronder)
+
+1. **AVG-veldenmodel is bindend** (mvp-spec §6, product-spec §6.1): geen velden voor BSN, geboortedatum, adres, pasnummer, gezondheid/afkomst/religie, niveau-labels — ook niet "tijdelijk" of via vrije kolommen. Notitievelden tonen de vaste instructie *"Alleen feitelijk en cursusgericht. Geen gezondheid of privéomstandigheden. Schrijf alsof de cliënt meeleest."*
+2. **Uitsluitend dummydata tot FG-akkoord** — in álle omgevingen; seed en fixtures bevatten alleen verzonnen personen.
+3. **Huisstijl-tokens** komen uit [docs/research/branding-bibliotheek-rotterdam.md](../research/branding-bibliotheek-rotterdam.md) en staan centraal in `app/styles/theme.css`; geen losse hexcodes in componenten; geen logo van Bibliotheek Rotterdam zonder schriftelijke toestemming.
+4. **Oranje `#ee7203` nooit als tekstkleur op wit** (2,98:1) — voor oranje tekst bestaat het token "primary-text" `#b35400` (5,0:1); wit op oranje alleen groot/bold.
+5. Alles achter login; foutcodes 400 (parse) / 422 (Zod) / 401–403 (auth/rol); rollen server-side afgedwongen.
+
+---
+
+## 1. Bestandsstructuur (doelbeeld na M2)
+
+```
+DigiPlein/
+├── app/
+│   ├── layout.tsx                  # root-layout: Poppins, nav, ChatWindow-slot (M2)
+│   ├── page.tsx                    # ST-107 startscherm (tegels)
+│   ├── styles/theme.css            # ST-002 huisstijl-tokens (enige plek met hexcodes)
+│   ├── stijlgids/page.tsx          # ST-002 voorbeeldpagina componenten
+│   ├── login/page.tsx + actions.ts # ST-004
+│   ├── medewerkers/page.tsx + actions.ts            # ST-101 (ADMIN)
+│   ├── vrijwilligers/page.tsx, [id]/page.tsx, actions.ts   # ST-102
+│   ├── clienten/page.tsx, [id]/page.tsx, [id]/export/page.tsx, actions.ts  # ST-103/105
+│   ├── cursusaanbod/page.tsx, [id]/page.tsx, actions.ts    # ST-104
+│   ├── audit/page.tsx              # ST-106 (ADMIN)
+│   └── api/chat/session/route.ts   # ST-201 identiteits-endpoint chat-contract
+├── components/
+│   ├── ui/…                        # shadcn/ui-componenten, aangepast op tokens (ST-002)
+│   ├── avg-notice.tsx              # vaste notitie-instructie (ST-102/103)
+│   ├── confirm-delete-dialog.tsx   # naam-overtypen-bevestiging (ST-105)
+│   └── chat/chat-window.tsx        # ST-201 embed + feature-flag/stub
+├── lib/
+│   ├── env.ts                      # Zod-gevalideerde env (ST-003)
+│   ├── db.ts                       # Prisma-singleton (ST-003)
+│   ├── session.ts                  # iron-session helpers (ST-004)
+│   ├── auth.ts                     # requireStaff()/requireAdmin() (ST-004)
+│   ├── audit.ts                    # writeAuditLog() + summary-conventie (ST-103/106)
+│   ├── app-name.ts                 # werknaam-constante (A8)
+│   └── chat/guardrails.ts          # AVG-weigerlijst + checkProposal() (ST-202)
+├── prisma/schema.prisma, migrations/, seed.ts        # ST-003
+├── __tests__/                      # Vitest (spiegel van lib/ en app/)
+├── proxy.ts                        # route-bescherming (ST-004; géén middleware.ts)
+├── vitest.config.ts, eslint-config, tsconfig.json    # ST-001
+└── .forgejo/workflows/verify.yml   # CI-voorbereiding (A2)
+```
+
+Conventies: Engelse tabel-/kolom-/codenamen, Nederlandse UI-labels (B1, je-vorm); enums DB `UPPER_SNAKE`; server actions per route co-located in `actions.ts` met Zod; geen publieke data-routes.
+
+---
+
+## 2. M0 — Fundament
+
+### ST-001 Scaffold
+
+- **Aanpak.** Next.js 16 (App Router) + React 19 + TypeScript strict opzetten met `create-next-app`, Tailwind CSS v4 en shadcn/ui (`shadcn init`, base-componenten button/input/card/dialog/table). Vitest + Testing Library + jsdom configureren; `server-only` mocken via alias (zelfde aanpak als Scrum4Me). Scripts: `dev`, `build`, `test` (`vitest run`), `lint`, `typecheck` (`tsc --noEmit`) en `verify` = lint + typecheck + test. `.env.example` met `DATABASE_URL`, `SESSION_SECRET`, `APP_BASE_URL`. Forgejo Actions-workflow `verify.yml` klaarzetten (uitzoekpunt: draait er een runner op git.jp-visser.nl? zo nee: bestand blijft inert, lokale verify is de gate — A2).
+- **Bestanden.** `package.json`, `tsconfig.json`, `next.config.ts`, `eslint.config.mjs`, `vitest.config.ts`, `components.json`, `app/layout.tsx`, `app/page.tsx` (placeholder), `.env.example`, `.forgejo/workflows/verify.yml`, `__tests__/smoke.test.tsx`.
+- **Testaanpak.** Eén smoke-test (render van de placeholder-page) om de hele keten vitest+jsdom+TSX te bewijzen; daarna `npm run verify && npm run build`.
+- **Afhankelijkheden.** Geen (startpunt).
+- **Klaar wanneer.** `npm run dev` en `npm run verify` draaien schoon (mvp-spec); build groen; smoke-test slaagt.
+
+### ST-002 Huisstijl-thema
+
+- **Aanpak.** `app/styles/theme.css` met alle tokens uit de branding-annex als CSS custom properties, gekoppeld aan Tailwind v4 `@theme`: primair `#ee7203`, primary-container `#fac494`, **primary-text `#b35400`** (de enige toegestane oranje tékstkleur op wit — hardstop 4), secondary `#38383a`, surfaces `#eeeff5`/`#f8f8f8`, outline `#979797`, accenten (`#e2b41d`, `#65baa8`, `#79c4e3`, `#585f98`, `#962737`), succes `#28a84f`/`#155927`. Poppins 400/500/700 via `next/font` met Arial-fallback. Componentstijl conform annex-advies: pill-knoppen (radius 9999px), primaire knop **zwart** met hover-inversie (wit + zwarte rand), inputs radius ~24px met oranje focus-rand, kaartvariant "plectrum" (één hoek 100px). Basislayout: header met app-naam (uit `lib/app-name.ts`, A8) + navigatie. Voorbeeldpagina `/stijlgids` toont knoppen, velden, kaarten, statuskleuren en de notitie-instructie-stijl.
+- **Bestanden.** `app/styles/theme.css`, `app/layout.tsx` (font + nav), `lib/app-name.ts`, `components/ui/button.tsx`, `components/ui/input.tsx`, `components/ui/card.tsx` (plectrum-variant), `app/stijlgids/page.tsx`.
+- **Testaanpak.** Unit-test die `theme.css` inleest en faalt zodra `#ee7203` als `color:`-waarde (tekst) voorkomt buiten focus/border/achtergrond-rollen — de hardstop als test. Handmatige contrastcheck op de stijlgids met de berekende ratio's uit de annex (zwart/wit-combinaties ≥ 4,5:1).
+- **Afhankelijkheden.** ST-001.
+- **Klaar wanneer.** Stijlgids toont knoppen/velden/kaarten in huisstijl; contrastcheck gehaald (mvp-spec); token-test groen.
+
+### ST-003 Database & schema
+
+- **Aanpak.** Eén Prisma-schema met **alle tien** tabellen uit mvp-spec §6 — `staff_members`, `volunteers`, `clients`, `courses`, `learning_tracks`, `lesson_dates`, `roster_entries`, `absences`, `attendances`, `audit_logs` — inclusief de M3/M4-tabellen (bewuste keuze uit de spec: uitbreiden zonder verbouwing). Enums: `STAFF_ROLE`, `COURSE_ASSESSMENT`, `CLIENT_STATUS`, `TRACK_STATUS`, `LESSON_STATUS`, `ROSTER_STATUS`, `ACTOR_TYPE` (UPPER_SNAKE, via `@map` naar snake_case kolommen). Alle tabellen `id uuid pk default gen_random_uuid()` (`@default(dbgenerated("gen_random_uuid()"))`), `created_at`/`updated_at timestamptz`. Constraints uit de spec: uniques (`courses.code`, `lesson_dates.date`, `(lesson_date_id, volunteer_id)`, `(lesson_date_id, learning_track_id)`, e-mails), **cascade delete** `clients → learning_tracks → attendances` (fundament voor F-05), `courses → learning_tracks` Restrict; CHECK-constraints (`max_sessions > 0`, `ends_on ≥ starts_on`) als raw SQL in de migratie (Prisma kent geen CHECK). `lib/env.ts` (Zod) en `lib/db.ts` (singleton). Seed (`prisma/seed.ts`): de twee cursussen (`KLIK_EN_TIK` max leeg/∞, `LES_OP_MAAT` max 4 — A1, beide 120 min di+do) + 1 admin (wachtwoord via `SEED_ADMIN_PASSWORD`-env, bcrypt). Lokale dev-Postgres via Docker (`docker-compose.dev.yml`); geen hostingkeuze nodig (A2).
+- **Bestanden.** `prisma/schema.prisma`, `prisma/migrations/<ts>_init/migration.sql` (incl. CHECK-SQL), `prisma/seed.ts`, `lib/env.ts`, `lib/db.ts`, `docker-compose.dev.yml`, `.env.example` (aangevuld), `__tests__/lib/env.test.ts`.
+- **Testaanpak.** `prisma validate` in verify-pad; `prisma migrate reset --force` + seed op lege DB als bewijs (migratie + seed idempotent herhaalbaar); unique- en cascade-gedrag aantonen met een wegwerp-script of psql-sessie tegen de dev-DB (duplicate `courses.code` → fout; delete client met traject → traject weg). Unit-test op `lib/env.ts` (ontbrekende var → duidelijke fout).
+- **Afhankelijkheden.** ST-001.
+- **Klaar wanneer.** Migratie + seed draaien op lege DB; unique-constraints aantoonbaar (mvp-spec); cascade aantoonbaar (voorschot op ST-105).
+
+### ST-004 Auth
+
+- **Aanpak.** iron-session volgens het bekende patroon van de bouwer: `lib/session.ts` (sessievorm `{ staffId, name, role }`, cookie httpOnly/secure, `SESSION_SECRET` ≥ 32 chars). `/login`: e-mail + wachtwoord → Zod-parse (422-conventie) → bcrypt-vergelijking → **neutrale foutmelding** bij elke ongeldige combinatie (geen "e-mail bestaat niet"); gedeactiveerde accounts kunnen niet inloggen. Logout-action vernietigt de sessie aantoonbaar. `proxy.ts` in de root (Next 16-conventie, géén `middleware.ts`): onverzegelt de sessie en redirect alles behalve `/login` en statics naar `/login`. `lib/auth.ts`: `requireStaff()` / `requireAdmin()` voor pages en server actions — rolcheck altijd server-side (403 bij rol-tekort), ook waar de UI al verbergt.
+- **Bestanden.** `lib/session.ts`, `lib/auth.ts`, `proxy.ts`, `app/login/page.tsx`, `app/login/actions.ts`, `app/logout/actions.ts` (of action in layout), `__tests__/lib/auth.test.ts`, `__tests__/app/login-action.test.ts`.
+- **Testaanpak.** Unit: `requireStaff`/`requireAdmin` met gemockte sessie (geen sessie → redirect/401, STAFF op ADMIN-actie → 403); login-action: parse-fout → 422-pad, onbekende combinatie en inactief account → zelfde neutrale fout. Handmatig: beschermde route zonder cookie → redirect; terugknop na uitloggen toont geen data.
+- **Afhankelijkheden.** ST-003 (staff_members + seed-admin), ST-002 (login-formulier in huisstijl).
+- **Klaar wanneer.** Beschermde route zonder sessie redirect; ADMIN/STAFF-onderscheid werkt (mvp-spec); alle F-01-criteria die over inloggen gaan zijn groen.
+
+---
+
+## 3. M1 — De vier tabellen
+
+Gedeeld patroon voor alle beheer-stories: lijst = server component met Prisma-query, zoeken/filteren via `searchParams`; mutaties = server actions met Zod (`.strict()` — onbekende velden zijn een 422, nooit "even erbij"); rolcheck via `lib/auth.ts`; formulieren met shadcn/ui in huisstijl; B1-teksten.
+
+### ST-101 Medewerkersbeheer (F-01)
+
+- **Aanpak.** `/medewerkers` (ADMIN-only, ook server-side): lijst met naam/e-mail/rol/actief; aanmaken (naam, e-mail uniek, rol, initieel wachtwoord), bewerken, deactiveren (geen hard delete — accounts zijn audit-actoren), wachtwoordreset (beheerder zet nieuw tijdelijk wachtwoord; geen self-service, team is klein). **Laatste-admin-bescherming**: degrade/deactivate van een admin gebeurt in een transactie die eerst telt of er >1 actieve admin is; zo nee → 422 met B1-uitleg.
+- **Bestanden.** `app/medewerkers/page.tsx`, `app/medewerkers/actions.ts`, `components/ui/table.tsx` (shadcn), `__tests__/app/medewerkers-actions.test.ts`.
+- **Testaanpak.** Unit op de actions: laatste-admin-regel (laatste actieve admin deactiveren/degraderen → geweigerd), dubbele e-mail → validatiefout, STAFF roept action aan → 403, gedeactiveerd account kan niet inloggen (samen met ST-004-test).
+- **Afhankelijkheden.** ST-004.
+- **Klaar wanneer.** Alle F-01-criteria groen, incl. laatste-admin-bescherming (mvp-spec).
+
+### ST-102 Vrijwilligersbeheer (F-02)
+
+- **Aanpak.** `/vrijwilligers`: lijst met naam, voorkeursdag(en) (di/do/beide als badges), actief-status en **NDA-indicator** (geen `nda_signed_at` → zichtbare markering, géén blokkade); zoeken op naam (case-insensitive contains), filter actief/inactief (default: actief). Formulier met exact de F-02-velden: naam (verplicht), e-mail, telefoon, voorkeur di (vinkje), voorkeur do (vinkje), frequentie-notitie, geheimhoudingsverklaring getekend op (datum), notities. Deactiveren is de standaardflow; **verwijderen alleen zonder gekoppelde rooster-/historiedata** (count op `roster_entries` + `absences`; in de MVP altijd 0, maar de guard staat er vanaf dag één). Notitieveld gebruikt `components/avg-notice.tsx` met de vaste instructie (hardstop 1).
+- **Bestanden.** `app/vrijwilligers/page.tsx`, `app/vrijwilligers/[id]/page.tsx`, `app/vrijwilligers/actions.ts`, `components/avg-notice.tsx`, `__tests__/app/vrijwilligers-actions.test.ts`.
+- **Testaanpak.** Unit: delete-guard (vrijwilliger met roosterdata → deactiveren afgedwongen), Zod-schema (verplicht naam, datumformaat NDA), zoek-/filterquery-opbouw. Rendertest: NDA-indicator verschijnt bij ontbrekende datum; notitie-instructie zichtbaar.
+- **Afhankelijkheden.** ST-004; levert `avg-notice.tsx` dat ST-103 hergebruikt.
+- **Klaar wanneer.** F-02-criteria groen (mvp-spec).
+
+### ST-103 Cliëntenbeheer (F-03) — AVG-by-design
+
+- **Aanpak.** Dit scherm ís het veldenadvies in software. `/clienten`: lijst toont **voornaam + eerste letter achternaam**, lesvorm-inschatting, status; zoeken op naam; standaardfilter verbergt `AFGEROND`/`GESTOPT`. Formulier met uitsluitend de F-03-velden (voornaam verplicht; contactgegevens mogen leeg — cliënt komt fysiek langs; leerwens functioneel geformuleerd; assessment-enum; status-enum; pseudonieme oefenen.nl-gebruikersnaam; toestemming-extra's datum + wijze; `last_attended_on` handmatig; notities met vaste instructie). Zod `.strict()` + het Prisma-model vormen samen de technische borging dat verboden velden niet bestaan. Dubbele naam → waarschuwing (geen blokkade). **Audit-schrijfpad wordt hier gebouwd** (planbeslissing): `lib/audit.ts` met `writeAuditLog({ actorType, actorId, action, entity, entityId, summary })` en een summary-conventie die nooit veldinhoud bevat ("status gewijzigd naar ACTIEF", "notities bijgewerkt") — elke create/update/statuswissel op cliënten logt; ST-106 levert de inzage-UI en de dekkingstests.
+- **Bestanden.** `app/clienten/page.tsx`, `app/clienten/[id]/page.tsx`, `app/clienten/actions.ts`, `lib/audit.ts`, `__tests__/app/clienten-actions.test.ts`, `__tests__/lib/audit.test.ts`.
+- **Testaanpak.** Unit: Zod weigert onbekende velden (expliciete test met `bsn`, `geboortedatum`, `adres`, `niveau` als input → 422); statusfilter-default; voornaam+initiaal-formatter; audit-write bij create/update/statuswissel met persoonsgegevens-arme summary. Rendertest: permanente notitie-instructie. Review-stap: tweede paar ogen (JP of reviewer-agent) bevestigt dat schema + UI geen verboden velden bevatten.
+- **Afhankelijkheden.** ST-004, ST-102 (`avg-notice.tsx`).
+- **Klaar wanneer.** F-03-criteria groen; reviewer bevestigt dat er geen verboden velden bestaan (mvp-spec).
+
+### ST-104 Cursusaanbod (F-04)
+
+- **Aanpak.** `/cursusaanbod`: lijst voor elke medewerker (read-only voor STAFF); bewerken alleen ADMIN — naam, beschrijving, **max. sessies (leeg = onbeperkt)**, sessieduur, lesdagen di/do; **`code` is onveranderlijk** (zit simpelweg niet in het update-schema). Seed-waarden uit ST-003 zichtbaar. Deactiveren kan; verwijderen alleen zonder gekoppelde trajecten (count `learning_tracks`).
+- **Bestanden.** `app/cursusaanbod/page.tsx`, `app/cursusaanbod/[id]/page.tsx`, `app/cursusaanbod/actions.ts`, `__tests__/app/cursusaanbod-actions.test.ts`.
+- **Testaanpak.** Unit: STAFF-mutatie → 403; update-payload met `code` → genegeerd/422; `max_sessions` leeg → null (onbeperkt), 0 of negatief → 422 (sluit aan op DB-CHECK); delete-guard met gekoppeld traject.
+- **Afhankelijkheden.** ST-004.
+- **Klaar wanneer.** F-04-criteria groen; max-sessies aanpasbaar zonder code (mvp-spec, A1).
+
+### ST-105 Cliënt-export & definitieve verwijdering (F-05)
+
+- **Aanpak.** `/clienten/[id]/export`: server-gerenderde, print/PDF-vriendelijke pagina (eigen printstylesheet, geen app-chrome) met **álle** opgeslagen gegevens van de cliënt incl. notities, en — omdat de tabellen al bestaan — trajecten/aanwezigheden zodra die er zijn (M4-proof). "Definitief verwijderen": ADMIN-only server action achter een bevestigingsdialoog met **naam-overtypen** (`components/confirm-delete-dialog.tsx`); verwijdering steunt op de DB-cascade uit ST-003 (client → tracks → attendances) en schrijft een **persoonsgegevens-vrije** auditregel (alleen intern id + tijdstip + uitvoerder; geen naam in de summary).
+- **Bestanden.** `app/clienten/[id]/export/page.tsx`, `components/confirm-delete-dialog.tsx`, uitbreiding `app/clienten/actions.ts`, `__tests__/app/clienten-delete.test.ts`.
+- **Testaanpak.** Unit: delete-action weigert zonder exacte naam-bevestiging en zonder ADMIN; auditregel bevat id maar geen naam (string-assertie). Demo-stap (DoD-scenario uit de spec): dummycliënt mét dummytraject aanmaken → export tonen → verwijderen → cascade geverifieerd (traject weg), auditregel zichtbaar.
+- **Afhankelijkheden.** ST-103 (cliënt-CRUD + audit-helper), ST-003 (cascade).
+- **Klaar wanneer.** F-05-criteria groen; cascade geverifieerd met dummytraject (mvp-spec).
+
+### ST-106 Audit-log (F-06)
+
+- **Aanpak.** `/audit` (ADMIN-only): nieuwste eerst, filter op actor-type en entiteit via `searchParams`, eenvoudige paginering (`take`/cursor). Insert-only is al de DB-vorm (geen update/delete-actions bestaan); de UI biedt ze ook niet. Hardening van de summary-conventie uit ST-103: centrale helper is de enige plek die summaries bouwt, zodat notitie-teksten of namen er niet per ongeluk in kunnen lekken.
+- **Bestanden.** `app/audit/page.tsx`, eventueel `lib/audit.ts` (verfijning), `__tests__/app/audit-page.test.ts`.
+- **Testaanpak.** Unit: filteropbouw; dekkingstest "cliëntmutatie produceert logregel" (create/update/statuswissel/delete → 4 regels); summary-test: notitie-inhoud komt nooit in een logregel; STAFF op `/audit` → 403/redirect.
+- **Afhankelijkheden.** ST-103 (schrijfpad bestaat).
+- **Klaar wanneer.** Cliëntmutatie produceert logregel; log-UI filtert (mvp-spec); logregels niet bewerkbaar/verwijderbaar via de UI.
+
+### ST-107 Startscherm (F-08)
+
+- **Aanpak.** `/`: begroeting met naam uit de sessie; vier navigatietegels (vrijwilligers, cliënten, cursusaanbod, medewerkers — die laatste alleen zichtbaar én bereikbaar voor ADMIN) plus chat-window-toegang (tot ST-201: nette "binnenkort"-tegel achter de feature-flag, A3). Lege-staat-teksten in B1 leggen per tegel uit wat hij doet ("Hier zet je wie er op dinsdag en donderdag helpt."). Dit scherm wordt in M3/M4 het "vandaag"-overzicht — de layout reserveert daar visueel ruimte voor, zonder te bouwen (YAGNI).
+- **Bestanden.** `app/page.tsx`, `components/tile.tsx` (kaart in plectrum-stijl), `__tests__/app/startscherm.test.tsx`.
+- **Testaanpak.** Rendertest per rol: ADMIN ziet vier tegels + audit-link, STAFF ziet er drie; B1-lege-staat-teksten aanwezig.
+- **Afhankelijkheden.** ST-004 (sessie/rol), ST-002 (tegels in huisstijl). Kan parallel aan ST-101–106; tegels linken hoogstens naar nog lege routes.
+- **Klaar wanneer.** F-08-criteria groen (mvp-spec).
+
+---
+
+## 4. M2 — Chat-window
+
+Het chat-window is een extern component (A3). M2 bouwt de **app-kant van het integratiecontract** (mvp-spec §10) zó dat (a) de app zonder component gewoon werkt (flag uit → "binnenkort"), en (b) het component bij oplevering alleen nog hoeft aan te haken op de afgesproken endpoints.
+
+### ST-201 Inbedding (F-07)
+
+- **Aanpak.** `components/chat/chat-window.tsx` als integratiepunt, geladen in de layout/startpagina, uitsluitend voor ingelogde medewerkers (proxy + render-conditie). Feature-flag `CHAT_WINDOW_ENABLED` + `CHAT_WINDOW_URL` in `lib/env.ts`. **Sessie-doorgifte conform contract §10.1**: het component erft de app-sessie; `app/api/chat/session/route.ts` levert — alleen met geldige iron-session — `{ name, role }` van de aanvrager aan het component (zelfde-origin; geen aparte tokens zolang het deploymodel onbekend is, A3-uitzoekpunt voor JP). Uitgelogd: niets zichtbaar, endpoint geeft 401.
+- **Bestanden.** `components/chat/chat-window.tsx`, `app/api/chat/session/route.ts`, `lib/env.ts` (flag/URL), aanpassing `app/layout.tsx`/`app/page.tsx`, `__tests__/app/chat-session-route.test.ts`.
+- **Testaanpak.** Unit: session-endpoint zonder sessie → 401, met sessie → naam+rol; rendertest: flag uit → "binnenkort"-tegel, flag aan + uitgelogd → geen chat. Acceptatie "medewerker kan chatten" volgt zodra het externe component beschikbaar is (afhankelijkheid bij JP, open vraag §10.7).
+- **Afhankelijkheden.** ST-004, ST-107; extern: component-oplevering (JP).
+- **Klaar wanneer.** Ingelogde medewerker ziet het chat-window (of de nette flag-uit-staat), uitgelogd niemand (mvp-spec); identiteits-endpoint aantoonbaar dicht zonder sessie.
+
+### ST-202 Guardrails & bevestigingsflow
+
+- **Aanpak.** `lib/chat/guardrails.ts`: de **AVG-weigerlijst als app-config** (hardstop uit product-spec §6.5 — in code, niet alleen in een agent-prompt): verboden onderwerpen (BSN, geboortedatum, adres, pasnummer, gezondheids-/afkomst-/religiegegevens, niveau-labels, cliënt-login, export van cliëntdata naar externe diensten) met NL-synoniemen/patronen, plus `checkProposal(beschrijving): { allowed, reason, fgReviewRequired }` — elk nieuw persoonsgegevens-veld vereist doel + bewaartermijn in het verzoek en krijgt `fgReviewRequired: true`. Capability-trappen uit contract §10.2 als server-side afdwinging: (a) vragen → elke STAFF; (b) wijziging zonder schema-impact → bevestiging aanvrager; (c) schema-/gedragimpact → **verplichte ADMIN-bevestiging** via een bevestigings-action die `requireAdmin()` afdwingt vóór er iets uitgevoerd wordt. De staat van een lopend voorstel ligt bij het component (contract); de app levert de check- en bevestigings-endpoints en weigert hard.
+- **Bestanden.** `lib/chat/guardrails.ts`, `app/api/chat/guardrail-check/route.ts`, `app/api/chat/confirm/route.ts` (ADMIN-only), `__tests__/lib/guardrails.test.ts`.
+- **Testaanpak.** Unit (de DoD-test van de MVP): "voeg BSN-veld toe", "leeftijd erbij", "exporteer cliënten naar Mailchimp" → geweigerd met uitleg + verwijzing naar product-spec §6.1; "veld 'rijdt zelf' bij vrijwilligers, doel + bewaartermijn vermeld" → toegestaan mét `fgReviewRequired`; bevestigings-route als STAFF → 403.
+- **Afhankelijkheden.** ST-201.
+- **Klaar wanneer.** Verboden-veld-verzoek wordt aantoonbaar geweigerd; schema-verzoek wacht op ADMIN (mvp-spec); weigerlijst staat in app-config.
+
+### ST-203 Audit-koppeling
+
+- **Aanpak.** Chat-geïnitieerde wijzigingen schrijven via `lib/audit.ts` een regel met `actor_type = CHAT_AGENT` en een **verwijzing naar het chatverzoek** (verzoek-id/omschrijving in de summary; `entity = "schema"` bij migratie-voorstellen, `action = "MIGRATION"`). De bevestigings-route uit ST-202 logt: wie bevestigde (ADMIN-id), wat, wanneer; `fgReviewRequired`-uitkomsten krijgen de markering "FG-toets vereist" in de regel. Geen persoonsgegevens of notitie-inhoud in summaries (zelfde conventie als ST-106).
+- **Bestanden.** Uitbreiding `app/api/chat/confirm/route.ts` + `lib/audit.ts`, `__tests__/app/chat-audit.test.ts`.
+- **Testaanpak.** Unit: bevestigde chat-wijziging → CHAT_AGENT-regel met verzoek-referentie én bevestigend ADMIN-id; geweigerd verzoek → optionele logregel zonder gevoelige inhoud; FG-markering aanwezig wanneer guardrails dat zeggen.
+- **Afhankelijkheden.** ST-202, ST-106.
+- **Klaar wanneer.** Uitgevoerde chat-wijziging is traceerbaar in het log (mvp-spec) — daarmee is de MVP-DoD-regel "audit registreert cliëntmutaties én chat-wijzigingen" volledig.
+
+---
+
+## 5. Volgorde & afhankelijkheden (samengevat)
+
+```
+ST-001 ─→ ST-002 ─→ ST-004 ─→ ST-101
+   └────→ ST-003 ──┘    ├───→ ST-102 ─→ ST-103 ─→ ST-105
+                        │        (avg-notice)└───→ ST-106
+                        ├───→ ST-104
+                        └───→ ST-107 ─→ ST-201 ─→ ST-202 ─→ ST-203
+                                          (extern: chat-component, JP)
+```
+
+Per story: `npm run verify && npm run build` vóór afronding; commit per logische laag; push + PR (Forgejo) pas na akkoord van JP. MVP-DoD: mvp-spec §12.
+
+## 6. Sprint-structuur (aan te maken ná goedkeuring — stap 4 van de opdracht)
+
+Voorstel voor de Scrum4Me-hiërarchie (product `cmq9hybds0003v27r99zvo92k`):
+
+| Sprint (goal) | PBI | Stories (met acceptatiecriteria uit de F-specs) | Taken per story |
+|---|---|---|---|
+| **S-M0** — "M0 Fundament: scaffold, huisstijl, schema en auth staan; verify groen" | "M0 — Fundament" (prio 1) | ST-001 t/m ST-004 (prio 1, sort_order 1–4) | 2–4 per story, conform §2 (bv. ST-003: schema → migratie+CHECKs → seed → constraint-bewijs) |
+| **S-M1** — "M1 Vier kerntabellen: volledig beheer met AVG-by-design" | "M1 — De vier tabellen" (prio 1) | ST-101 t/m ST-107 (sort_order 1–7) | 2–4 per story, conform §3 |
+| **S-M2** — "M2 Chat-window: contract-kant, guardrails en audit-koppeling" | "M2 — Chat-window" (prio 2) | ST-201 t/m ST-203 (sort_order 1–3) | 2–3 per story, conform §4 |
+
+Werkafspraken bij het aanmaken: stories krijgen de F-criteria als `acceptance_criteria`; taken krijgen de aanpak-tekst als `implementation_plan`; dit plan gaat ook als product-doc (folder PLANS) naar Scrum4Me en wordt via `source_docs`/`link_pbi_doc` (rol PLAN) aan de drie PBI's gekoppeld. Na het aanmaken: **hardstop** — niets uitvoeren.
