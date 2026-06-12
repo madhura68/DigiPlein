@@ -1,15 +1,11 @@
 import Link from 'next/link'
 
+import { AdminList } from '@/components/admin-list'
+import { FilterPanel } from '@/components/filter-panel'
+import { PageHeader } from '@/components/page-header'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { TableCell, TableRow } from '@/components/ui/table'
 import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { ACTOR_TYPE_LABELS } from '@/lib/enums'
@@ -55,16 +51,13 @@ export default async function AuditPage({
   const hasNext = logs.length === PAGE_SIZE
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-3xl">Audit-log</h1>
-        <p className="text-muted-foreground">
-          Wijzigingsgeschiedenis voor verantwoording (AVG). Regels zijn niet
-          bewerkbaar of verwijderbaar.
-        </p>
-      </header>
+    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+      <PageHeader
+        title="Audit-log"
+        description="Wijzigingsgeschiedenis voor verantwoording (AVG). Regels zijn niet bewerkbaar of verwijderbaar."
+      />
 
-      <form className="flex flex-wrap items-end gap-3">
+      <FilterPanel>
         <div className="flex flex-col gap-1.5">
           <label htmlFor="actorType" className="font-medium">
             Actor
@@ -98,62 +91,52 @@ export default async function AuditPage({
         <Button type="submit" variant="secondary">
           Filter
         </Button>
-      </form>
+      </FilterPanel>
 
-      <section className="flex flex-col gap-3">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Tijdstip</TableHead>
-              <TableHead>Actor</TableHead>
-              <TableHead>Actie</TableHead>
-              <TableHead>Entiteit</TableHead>
-              <TableHead>Samenvatting</TableHead>
+      {logs.length > 0 ? (
+        <AdminList
+          headers={['Tijdstip', 'Actor', 'Actie', 'Entiteit', 'Samenvatting']}
+        >
+          {logs.map((log) => (
+            <TableRow key={log.id}>
+              <TableCell className="whitespace-nowrap text-muted-foreground">
+                {formatDateTime(log.createdAt)}
+              </TableCell>
+              <TableCell>{ACTOR_TYPE_LABELS[log.actorType]}</TableCell>
+              <TableCell className="font-bold">{log.action}</TableCell>
+              <TableCell>{log.entity}</TableCell>
+              <TableCell>{log.summary}</TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {logs.map((log) => (
-              <TableRow key={log.id}>
-                <TableCell className="whitespace-nowrap text-muted-foreground">
-                  {formatDateTime(log.createdAt)}
-                </TableCell>
-                <TableCell>{ACTOR_TYPE_LABELS[log.actorType]}</TableCell>
-                <TableCell className="font-medium">{log.action}</TableCell>
-                <TableCell>{log.entity}</TableCell>
-                <TableCell>{log.summary}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {logs.length === 0 ? (
-          <p className="text-muted-foreground">Geen logregels gevonden.</p>
-        ) : null}
+          ))}
+        </AdminList>
+      ) : (
+        <p className="text-muted-foreground">Geen logregels gevonden.</p>
+      )}
 
-        {hasPrev || hasNext ? (
-          <div className="flex justify-between">
-            {hasPrev ? (
-              <Link
-                href={pageHref(page - 1)}
-                className={buttonVariants({ variant: 'secondary', size: 'sm' })}
-              >
-                ← Vorige
-              </Link>
-            ) : (
-              <span />
-            )}
-            {hasNext ? (
-              <Link
-                href={pageHref(page + 1)}
-                className={buttonVariants({ variant: 'secondary', size: 'sm' })}
-              >
-                Volgende →
-              </Link>
-            ) : (
-              <span />
-            )}
-          </div>
-        ) : null}
-      </section>
+      {hasPrev || hasNext ? (
+        <div className="flex justify-between">
+          {hasPrev ? (
+            <Link
+              href={pageHref(page - 1)}
+              className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+            >
+              ← Vorige
+            </Link>
+          ) : (
+            <span />
+          )}
+          {hasNext ? (
+            <Link
+              href={pageHref(page + 1)}
+              className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+            >
+              Volgende →
+            </Link>
+          ) : (
+            <span />
+          )}
+        </div>
+      ) : null}
     </main>
   )
 }

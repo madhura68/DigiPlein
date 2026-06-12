@@ -16,7 +16,6 @@ export function NieuweMedewerkerForm() {
       action={formAction}
       className="flex flex-col gap-4 rounded-card border border-outline-variant p-6"
     >
-      <h2 className="text-xl">Nieuwe medewerker</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="name" className="font-medium">
