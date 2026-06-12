@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 
 import { ClientForm } from '@/app/clienten/clienten-form'
-import { buildClientWhere, formatClientName } from '@/app/clienten/query'
+import {
+  buildClientWhere,
+  clientStatusTone,
+  formatClientName,
+} from '@/app/clienten/query'
 import { AVG_NOTE_INSTRUCTION } from '@/lib/avg'
 
 describe('clienten query — buildClientWhere', () => {
@@ -35,6 +39,16 @@ describe('clienten query — formatClientName (AVG: alleen initiaal achternaam)'
 
   it('zonder achternaam → alleen voornaam', () => {
     expect(formatClientName({ firstName: 'Sandra', lastName: null })).toBe('Sandra')
+  })
+})
+
+describe('clienten query — clientStatusTone', () => {
+  it('mapt elke status naar een toegankelijke chip-tone', () => {
+    expect(clientStatusTone('ACTIEF')).toBe('active')
+    expect(clientStatusTone('AFGEROND')).toBe('done')
+    expect(clientStatusTone('GESTOPT')).toBe('stopped')
+    expect(clientStatusTone('INTAKE')).toBe('info')
+    expect(clientStatusTone('AANGEMELD')).toBe('neutral')
   })
 })
 

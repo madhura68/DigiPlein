@@ -1,4 +1,6 @@
-import type { Prisma } from '@prisma/client'
+import type { ClientStatus, Prisma } from '@prisma/client'
+
+import type { ChipTone } from '@/components/ui/status-chip'
 
 // Pure helpers (los van de server-actions, zodat ze direct testbaar zijn).
 
@@ -39,4 +41,20 @@ export function clientFullName(client: {
   lastName?: string | null
 }): string {
   return client.lastName ? `${client.firstName} ${client.lastName}` : client.firstName
+}
+
+// Status → chip-tone voor het overzicht (HS-4); houdt de kleur-keuze los van de UI.
+export function clientStatusTone(status: ClientStatus): ChipTone {
+  switch (status) {
+    case 'ACTIEF':
+      return 'active'
+    case 'AFGEROND':
+      return 'done'
+    case 'GESTOPT':
+      return 'stopped'
+    case 'INTAKE':
+      return 'info'
+    default:
+      return 'neutral'
+  }
 }
