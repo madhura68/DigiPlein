@@ -57,7 +57,7 @@ export function VrijwilligerForm({
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-card border border-outline-variant p-6"
+      className="flex flex-col gap-4 rounded-card border border-outline-variant bg-card p-6"
     >
       {initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
       <div className="grid gap-4 sm:grid-cols-2">

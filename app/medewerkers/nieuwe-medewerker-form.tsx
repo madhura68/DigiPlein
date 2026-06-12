@@ -14,7 +14,7 @@ export function NieuweMedewerkerForm() {
   return (
     <form
       action={formAction}
-      className="flex flex-col gap-4 rounded-card border border-outline-variant p-6"
+      className="flex flex-col gap-4 rounded-card border border-outline-variant bg-card p-6"
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="flex flex-col gap-1.5">

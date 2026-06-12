@@ -25,7 +25,7 @@ export function ConfirmDeleteDialog({
   const matches = typed.trim() === fullName.trim()
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-outline-variant p-6">
+    <section className="flex flex-col gap-3 rounded-card border border-outline-variant bg-card p-6">
       <h2 className="text-xl">Definitief verwijderen</h2>
       <p className="text-sm text-muted-foreground">
         Voor een AVG-wisverzoek. Dit verwijdert de cliënt en alle gekoppelde

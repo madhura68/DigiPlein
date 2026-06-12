@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
+import { StatusChip } from "@/components/ui/status-chip"
 
 const rolparen: { naam: string; klassen: string }[] = [
   { naam: "primary-container", klassen: "bg-primary-container text-primary-container-foreground" },
@@ -20,8 +22,9 @@ export default function StijlgidsPage() {
       <header className="flex flex-col gap-3">
         <h1>Stijlgids</h1>
         <p className="max-w-2xl text-muted-foreground">
-          De huisstijl van Bibliotheek Rotterdam vertaald naar MD3-rolparen. Elk
-          vlak toont een achtergrondrol met de bijbehorende on-tekstkleur.
+          De huisstijl van Bibliotheek Rotterdam (compacte hybride richting). De
+          app-shell, pagina-headers, filterblokken en contentkaarten zie je op de
+          beheerschermen; hier staan de losse bouwstenen.
         </p>
       </header>
 
@@ -74,6 +77,9 @@ export default function StijlgidsPage() {
           </label>
           <Input id="voorbeeld" placeholder="Typ hier…" />
         </div>
+        <label className="flex items-center gap-2">
+          <Checkbox defaultChecked /> Selectievak met merk-oranje accent
+        </label>
       </section>
 
       <section className="flex flex-col gap-4">
@@ -87,16 +93,17 @@ export default function StijlgidsPage() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2>Status</h2>
-        <div className="flex flex-wrap items-center gap-4">
-          <span className="inline-flex items-center rounded-pill bg-success px-3 py-1 text-sm font-bold text-success-foreground">
-            Beschikbaar
-          </span>
-          <span className="inline-flex items-center rounded-pill bg-error px-3 py-1 text-sm font-bold text-error-foreground">
-            Fout
-          </span>
-          <span className="font-bold text-success-text">Status-tekst groen</span>
+        <h2>Statuschips</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <StatusChip label="Aangemeld" tone="neutral" />
+          <StatusChip label="Intake" tone="info" />
+          <StatusChip label="Actief" tone="active" />
+          <StatusChip label="Afgerond" tone="done" />
+          <StatusChip label="Gestopt" tone="stopped" />
         </div>
+        <p className="text-sm text-muted-foreground">
+          Vaste, toegankelijke tokenparen per tone (≥ 4,5:1).
+        </p>
       </section>
 
       <section className="flex flex-col gap-4">

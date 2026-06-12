@@ -29,7 +29,7 @@ export function VrijwilligerGevarenzone({
   const error = deactivateState.error ?? deleteState.error
 
   return (
-    <section className="flex flex-col gap-3 rounded-card border border-outline-variant p-6">
+    <section className="flex flex-col gap-3 rounded-card border border-outline-variant bg-card p-6">
       <h2 className="text-xl">Beheer</h2>
       <p className="text-sm text-muted-foreground">
         Deactiveren is de standaard. Verwijderen kan alleen als er geen rooster-
