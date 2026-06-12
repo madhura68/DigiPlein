@@ -29,7 +29,7 @@ export default function StijlgidsPage() {
         <h2>Kleurrollen</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <div className="flex min-h-24 flex-col justify-end rounded-card bg-brand p-4">
-            <span className="font-bold text-primary-foreground">Aa primary (brand)</span>
+            <span className="font-bold text-foreground">Aa primary (brand)</span>
           </div>
           {rolparen.map((rol) => (
             <div
