@@ -1,25 +1,17 @@
 import Link from 'next/link'
 
-import { Button } from '@/components/ui/button'
+import { AdminList } from '@/components/admin-list'
+import { FilterPanel } from '@/components/filter-panel'
+import { PageHeader } from '@/components/page-header'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { StatusChip } from '@/components/ui/status-chip'
+import { TableCell, TableRow } from '@/components/ui/table'
 import { requireStaff } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
-import { createVolunteer } from './actions'
-import {
-  buildVolunteerWhere,
-  formatVoorkeursdagen,
-  ndaOntbreekt,
-} from './query'
-import { VrijwilligerForm } from './vrijwilliger-form'
+import { buildVolunteerWhere, formatVoorkeursdagen, ndaOntbreekt } from './query'
 
 export default async function VrijwilligersPage({
   searchParams,
@@ -34,84 +26,83 @@ export default async function VrijwilligersPage({
   })
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-3xl">Vrijwilligers</h1>
-        <p className="text-muted-foreground">
-          Beheer wie er op dinsdag en donderdag helpt.
-        </p>
-      </header>
+    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+      <PageHeader
+        title="Vrijwilligers"
+        description="Beheer wie er op dinsdag en donderdag helpt."
+        action={
+          <Link href="/vrijwilligers/nieuw" className={buttonVariants()}>
+            Nieuwe vrijwilliger
+          </Link>
+        }
+      />
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl">Nieuwe vrijwilliger</h2>
-        <VrijwilligerForm action={createVolunteer} submitLabel="Toevoegen" />
-      </section>
-
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl">Overzicht</h2>
-        <form className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="q" className="font-medium">
-              Zoeken op naam
-            </label>
-            <Input id="q" name="q" defaultValue={sp.q ?? ''} className="max-w-xs" />
-          </div>
-          <label className="flex items-center gap-2 pb-2.5">
-            <input
-              type="checkbox"
-              name="filter"
-              value="all"
-              defaultChecked={sp.filter === 'all'}
-            />
-            Ook inactieve tonen
+      <FilterPanel>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="q" className="font-medium">
+            Zoeken op naam
           </label>
-          <Button type="submit" variant="secondary">
-            Filter
-          </Button>
-        </form>
+          <Input id="q" name="q" defaultValue={sp.q ?? ''} className="max-w-xs" />
+        </div>
+        <label className="flex items-center gap-2 pb-2.5">
+          <Checkbox name="filter" value="all" defaultChecked={sp.filter === 'all'} />
+          Ook inactieve tonen
+        </label>
+        <Button type="submit" variant="secondary">
+          Filter
+        </Button>
+      </FilterPanel>
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Naam</TableHead>
-              <TableHead>Voorkeursdagen</TableHead>
-              <TableHead>Geheimhouding</TableHead>
-              <TableHead>Status</TableHead>
+      {volunteers.length > 0 ? (
+        <AdminList
+          headers={['Naam', 'Voorkeursdagen', 'Geheimhouding', 'Status', 'Actie']}
+        >
+          {volunteers.map((volunteer) => (
+            <TableRow
+              key={volunteer.id}
+              className={volunteer.isActive ? undefined : 'opacity-60'}
+            >
+              <TableCell>
+                <Link
+                  href={`/vrijwilligers/${volunteer.id}`}
+                  className="font-bold text-primary-text underline-offset-2 hover:underline"
+                >
+                  {volunteer.name}
+                </Link>
+                {volunteer.email || volunteer.phone ? (
+                  <p className="text-xs text-muted-foreground">
+                    {volunteer.email ?? volunteer.phone}
+                  </p>
+                ) : null}
+              </TableCell>
+              <TableCell>{formatVoorkeursdagen(volunteer)}</TableCell>
+              <TableCell>
+                {ndaOntbreekt(volunteer) ? (
+                  <StatusChip label="Ontbreekt" tone="neutral" />
+                ) : (
+                  <span className="text-muted-foreground">Getekend</span>
+                )}
+              </TableCell>
+              <TableCell>
+                <StatusChip
+                  label={volunteer.isActive ? 'Actief' : 'Inactief'}
+                  tone={volunteer.isActive ? 'active' : 'neutral'}
+                />
+              </TableCell>
+              <TableCell className="text-right">
+                <Link
+                  href={`/vrijwilligers/${volunteer.id}`}
+                  className="text-sm font-bold text-primary-text hover:underline"
+                >
+                  Openen
+                </Link>
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {volunteers.map((v) => (
-              <TableRow
-                key={v.id}
-                className={v.isActive ? undefined : 'opacity-60'}
-              >
-                <TableCell className="font-medium">
-                  <Link
-                    href={`/vrijwilligers/${v.id}`}
-                    className="underline underline-offset-2 hover:text-primary-text"
-                  >
-                    {v.name}
-                  </Link>
-                </TableCell>
-                <TableCell>{formatVoorkeursdagen(v)}</TableCell>
-                <TableCell>
-                  {ndaOntbreekt(v) ? (
-                    <span className="inline-flex items-center rounded-pill bg-primary-container px-2.5 py-0.5 text-xs font-medium text-primary-container-foreground">
-                      Ontbreekt
-                    </span>
-                  ) : (
-                    'Getekend'
-                  )}
-                </TableCell>
-                <TableCell>{v.isActive ? 'Actief' : 'Inactief'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        {volunteers.length === 0 ? (
-          <p className="text-muted-foreground">Geen vrijwilligers gevonden.</p>
-        ) : null}
-      </section>
+          ))}
+        </AdminList>
+      ) : (
+        <p className="text-muted-foreground">Geen vrijwilligers gevonden.</p>
+      )}
     </main>
   )
 }
