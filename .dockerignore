@@ -1,0 +1,22 @@
+# Wat NIET in de build-context hoeft (kleiner + geen secrets in het image).
+.git
+node_modules
+.next
+out
+coverage
+
+# Secrets / lokale env — nooit in het image (build gebruikt dummy ENV in de Dockerfile)
+.env
+.env.*
+!.env.example
+
+# Tests / docs / tooling — niet nodig voor de productie-build
+__tests__
+tests
+docs
+.claude
+.superpowers
+.vscode
+*.log
+.DS_Store
+docker-compose*.yml
