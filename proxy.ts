@@ -12,8 +12,11 @@ export function proxy(request: NextRequest) {
     request.cookies.get(sessionOptions.cookieName)?.value
   )
   const isLoginRoute = pathname === '/login'
+  // API-routes regelen hun eigen auth (JSON 401) i.p.v. een HTML-redirect naar
+  // /login — nodig o.a. voor het chat-identiteitsendpoint (contract §10.1).
+  const isApiRoute = pathname.startsWith('/api/')
 
-  if (!hasSession && !isLoginRoute) {
+  if (!hasSession && !isLoginRoute && !isApiRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
   if (hasSession && isLoginRoute) {

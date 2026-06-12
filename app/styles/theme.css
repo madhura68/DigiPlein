@@ -41,6 +41,9 @@
   --surface-variant: #eeeff5;
   --surface-container: #f8f8f8;
   --surface-hover: #ededed;
+  /* Pagina-achtergrond (compacte hybride huisstijl): lichtgrijs, zodat de witte
+     contentkaarten eruit springen. Tekst = zwart (18,6:1). */
+  --page: #eef0f5;
 
   /* Card */
   --card: #ffffff;
@@ -52,15 +55,18 @@
   --outline: #979797;
   --outline-variant: #eeeff5;
   --border: #eeeff5;
-  --input: #eeeff5;
+  /* Invoerveld-rand: #8c8c8c = 3,35:1 op wit, zodat de veldgrens waarneembaar is
+     (WCAG 1.4.11). Bewust donkerder dan de decoratieve --border/--outline-variant. */
+  --input: #8c8c8c;
 
   /* Error — merk-conform bordeaux, wit 8,0:1 */
   --error: #962737;
   --error-foreground: #ffffff;
 
-  /* Succes / status */
+  /* Succes / status — on-success is ZWART (wit op #28a84f = 3,1:1, onder AA);
+     statuslabels gebruiken bij voorkeur text-success-text op een lichte container. */
   --success: #28a84f;
-  --success-foreground: #ffffff;
+  --success-foreground: #000000;
   --success-text: #155927;
 
   /* Accenten */
@@ -86,6 +92,7 @@
   --color-surface-variant: var(--surface-variant);
   --color-surface-container: var(--surface-container);
   --color-surface-hover: var(--surface-hover);
+  --color-page: var(--page);
 
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -131,7 +138,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-page text-foreground;
     font-family: var(--font-sans);
     font-size: clamp(1rem, 0.94rem + 0.27vw, 1.125rem); /* 16 → 18px */
     line-height: 1.556;
@@ -156,5 +163,16 @@
   h4 {
     font-size: 1.25rem; /* 20px */
     line-height: 1.5;
+  }
+
+  /* WCAG 2.2 AA (1.4.11 / 2.4.7): een contrastrijke focus-indicator — zwart op wit
+     ≈ 21:1 — náást de merk-oranje accentrand (#ee7203 is op zichzelf maar 2,98:1).
+     Box-shadow i.p.v. outline, zodat de component-`outline-none` (die de oranje rand
+     de hoofdrol geeft) deze indicator niet wegdrukt. Dekt knoppen, links, inputs,
+     selects, textareas en de tegels in één plek. */
+  :where(a, button, input, select, textarea):focus-visible {
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px var(--foreground);
   }
 }

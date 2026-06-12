@@ -14,6 +14,18 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+  // M2 chat-window (F-07/§10): integratiepunt achter een feature-flag. Default uit
+  // → "binnenkort"; aan ("true") + een geldige URL → het externe component wordt
+  // ingebed (A3). Env-vars zijn strings, vandaar de transform/preprocess.
+  CHAT_WINDOW_ENABLED: z
+    .string()
+    .optional()
+    .transform((value) => value === 'true'),
+  CHAT_WINDOW_URL: z.preprocess(
+    (value) =>
+      typeof value === 'string' && value.length === 0 ? undefined : value,
+    z.string().url('CHAT_WINDOW_URL moet een geldige URL zijn').optional()
+  ),
 })
 
 const parsed = envSchema.safeParse(process.env)
