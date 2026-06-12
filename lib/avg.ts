@@ -35,3 +35,14 @@ export const VERBODEN_VELDEN = [
 ] as const
 
 export type VerbodenVeld = (typeof VERBODEN_VELDEN)[number]
+
+// Feature-verzoeken die — los van veldnamen — door de chat-guardrails (ST-202)
+// hard geweigerd worden (§10 AVG-guardrails): een cliënt-login en export van
+// cliëntdata naar externe diensten. Termen zijn accent-genormaliseerd ('ë' → 'e').
+export const VERBODEN_FEATURE_TERMEN = [
+  'client-login',
+  'client login',
+  'clientlogin',
+  'externe dienst',
+  'externe diensten',
+] as const
