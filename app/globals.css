@@ -22,3 +22,6 @@
 @utility outline-brand {
   outline-color: var(--brand);
 }
+@utility accent-brand {
+  accent-color: var(--brand);
+}

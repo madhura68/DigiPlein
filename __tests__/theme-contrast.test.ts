@@ -42,6 +42,8 @@ const PAIRS: Array<[string, string, string]> = [
   ['page', 'foreground', 'pagina-achtergrond'],
   ['brand', 'foreground', 'tekst op merk-oranje (zwart)'],
   ['accent-indigo', 'primary-foreground', 'wit op indigo'],
+  ['surface-variant', 'foreground', 'grijze status-chip'],
+  ['accent-blue', 'foreground', 'blauwe status-chip'],
 ]
 
 describe('theme — token-paar-contrast (WCAG 2.2 AA)', () => {
