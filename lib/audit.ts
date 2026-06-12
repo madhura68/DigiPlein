@@ -69,3 +69,33 @@ export function clientUpdatedSummary(change: {
   const text = parts.join('; ')
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
+
+// ST-203 — audit-koppeling voor chat-geïnitieerde wijzigingen (§10.4). Schrijft een
+// CHAT_AGENT-regel met een verwijzing naar het chatverzoek en, bij een nieuw veld,
+// de "FG-toets vereist"-markering (uit checkProposal().fgReviewRequired). De
+// uitvoering zelf — migratie + code via het deploy-pad — loopt via het externe
+// component (A3); dit is het schrijfpad dat het daarbij aanroept. De aangeleverde
+// `summary` hoort persoonsgegevens-arm te zijn (een schema-/UI-wijziging, geen data).
+export type ChatChangeAudit = {
+  requestRef: string
+  summary: string
+  action?: string
+  entity?: string
+  entityId?: string | null
+  fgReviewRequired?: boolean
+  confirmedByStaffId?: string | null
+}
+
+export async function logChatChange(change: ChatChangeAudit): Promise<void> {
+  const marked = change.fgReviewRequired
+    ? `${change.summary} — FG-toets vereist`
+    : change.summary
+  await writeAuditLog({
+    actorType: 'CHAT_AGENT',
+    actorId: change.confirmedByStaffId ?? null,
+    action: change.action ?? 'CHAT_CHANGE',
+    entity: change.entity ?? 'schema',
+    entityId: change.entityId ?? null,
+    summary: `${marked} (verzoek: ${change.requestRef})`,
+  })
+}

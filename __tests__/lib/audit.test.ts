@@ -11,6 +11,7 @@ import {
   writeAuditLog,
   clientCreatedSummary,
   clientUpdatedSummary,
+  logChatChange,
 } from '@/lib/audit'
 
 beforeEach(() => {
@@ -96,5 +97,41 @@ describe('clientUpdatedSummary — persoonsgegevens-arm', () => {
 describe('clientCreatedSummary', () => {
   it('is een vaste, persoonsgegevens-vrije tekst', () => {
     expect(clientCreatedSummary()).toBe('Cliënt aangemaakt')
+  })
+})
+
+describe('logChatChange (ST-203 audit-koppeling)', () => {
+  it('schrijft een CHAT_AGENT-regel met verzoek-referentie + bevestiger', async () => {
+    await logChatChange({
+      requestRef: 'req-42',
+      summary: 'Sessiemaximum verhoogd naar 6',
+      entity: 'course',
+      confirmedByStaffId: 'admin-1',
+    })
+    const data = mocks.auditLog.create.mock.calls[0][0].data
+    expect(data.actorType).toBe('CHAT_AGENT')
+    expect(data.actorId).toBe('admin-1')
+    expect(data.entity).toBe('course')
+    expect(data.summary).toContain('Sessiemaximum verhoogd naar 6')
+    expect(data.summary).toContain('req-42')
+  })
+
+  it('markeert "FG-toets vereist" bij een nieuw persoonsgegevens-veld', async () => {
+    await logChatChange({
+      requestRef: 'req-7',
+      summary: 'Veld "rijdtZelf" toegevoegd',
+      fgReviewRequired: true,
+    })
+    expect(mocks.auditLog.create.mock.calls[0][0].data.summary).toMatch(
+      /FG-toets vereist/i
+    )
+  })
+
+  it('defaults: actorId null, action CHAT_CHANGE, entity schema', async () => {
+    await logChatChange({ requestRef: 'r', summary: 's' })
+    const data = mocks.auditLog.create.mock.calls[0][0].data
+    expect(data.actorId).toBeNull()
+    expect(data.action).toBe('CHAT_CHANGE')
+    expect(data.entity).toBe('schema')
   })
 })
