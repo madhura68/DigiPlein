@@ -1,30 +1,27 @@
 import { ChatWindow } from '@/components/chat/chat-window'
-import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/page-header'
 import { requireStaff } from '@/lib/auth'
-
-import { logout } from './logout/actions'
-import { StartTiles } from './start-tiles'
 
 export default async function Home() {
   const session = await requireStaff()
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-3xl">Welkom terug, {session.name}.</h1>
-          <p className="text-muted-foreground">
-            Kies waar je mee aan de slag wilt.
+    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+      <PageHeader
+        title={`Welkom terug, ${session.name}.`}
+        description="Kies hierboven een onderdeel om mee aan de slag te gaan."
+      />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <ChatWindow authenticated />
+        {/* Ruimte voor het M3/M4 "vandaag"-overzicht (wie er komt + bezetting) — YAGNI. */}
+        <div className="rounded-card rounded-br-[2rem] border border-dashed border-outline-variant bg-card p-6">
+          <p className="font-bold">Vandaag</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Het overzicht van wie er komt en de bezetting verschijnt hier in een
+            latere fase.
           </p>
         </div>
-        <form action={logout}>
-          <Button type="submit" variant="secondary">
-            Uitloggen
-          </Button>
-        </form>
-      </header>
-
-      <StartTiles role={session.role} chatSlot={<ChatWindow authenticated />} />
+      </div>
     </main>
   )
 }
