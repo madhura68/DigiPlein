@@ -4,8 +4,16 @@ import Link from 'next/link'
 import { Tile } from '@/components/tile'
 
 // Rolafhankelijke tegels van het startscherm. Apart van page.tsx zodat de
-// per-rol-weergave direct te renderen valt in de test (geen async/sessie).
-export function StartTiles({ role }: { role: StaffRole }) {
+// per-rol-weergave direct te renderen valt in de test (geen async/sessie). De
+// chat-tegel komt als slot binnen (ST-201), zodat de feature-flag buiten dit
+// rol-component blijft.
+export function StartTiles({
+  role,
+  chatSlot,
+}: {
+  role: StaffRole
+  chatSlot?: React.ReactNode
+}) {
   const isAdmin = role === 'ADMIN'
 
   return (
@@ -33,11 +41,7 @@ export function StartTiles({ role }: { role: StaffRole }) {
             description="Beheer wie toegang heeft tot DigiPlein."
           />
         ) : null}
-        <Tile
-          title="Chat"
-          badge="Binnenkort"
-          description="Straks stel je hier in het Nederlands je vraag over de app."
-        />
+        {chatSlot}
       </div>
 
       {isAdmin ? (

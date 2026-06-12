@@ -1,3 +1,4 @@
+import { ChatWindow } from '@/components/chat/chat-window'
 import { Button } from '@/components/ui/button'
 import { requireStaff } from '@/lib/auth'
 
@@ -23,7 +24,7 @@ export default async function Home() {
         </form>
       </header>
 
-      <StartTiles role={session.role} />
+      <StartTiles role={session.role} chatSlot={<ChatWindow authenticated />} />
     </main>
   )
 }

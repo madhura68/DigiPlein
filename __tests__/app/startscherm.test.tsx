@@ -29,15 +29,14 @@ describe('StartTiles (F-08 startscherm)', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('toont B1-lege-staat-teksten per tegel, incl. de "binnenkort"-chat', () => {
-    render(<StartTiles role="STAFF" />)
+  it('toont B1-lege-staat-teksten per tegel en rendert de chat-slot', () => {
+    render(<StartTiles role="STAFF" chatSlot={<div>chat-slot</div>} />)
     expect(
       screen.getByText('Hier zet je wie er op dinsdag en donderdag helpt.')
     ).toBeInTheDocument()
     expect(
       screen.getByText('Houd bij wie er leert en wat hun leerwens is.')
     ).toBeInTheDocument()
-    expect(screen.getByText('Binnenkort')).toBeInTheDocument()
-    expect(screen.getByText(/Straks stel je hier/)).toBeInTheDocument()
+    expect(screen.getByText('chat-slot')).toBeInTheDocument()
   })
 })
