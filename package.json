@@ -15,7 +15,8 @@
     "prebuild": "prisma generate",
     "seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
-    "db:verify-constraints": "tsx scripts/verify-constraints.ts"
+    "db:verify-constraints": "tsx scripts/verify-constraints.ts",
+    "icons": "node scripts/generate-pwa-icons.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
