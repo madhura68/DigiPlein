@@ -34,11 +34,7 @@ export function Tile({
   )
 
   if (!href) {
-    return (
-      <div aria-disabled="true" className="opacity-70">
-        {card}
-      </div>
-    )
+    return <div className="opacity-70">{card}</div>
   }
 
   return (

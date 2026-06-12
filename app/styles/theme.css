@@ -52,7 +52,9 @@
   --outline: #979797;
   --outline-variant: #eeeff5;
   --border: #eeeff5;
-  --input: #eeeff5;
+  /* Invoerveld-rand: #8c8c8c = 3,35:1 op wit, zodat de veldgrens waarneembaar is
+     (WCAG 1.4.11). Bewust donkerder dan de decoratieve --border/--outline-variant. */
+  --input: #8c8c8c;
 
   /* Error — merk-conform bordeaux, wit 8,0:1 */
   --error: #962737;
@@ -156,5 +158,16 @@
   h4 {
     font-size: 1.25rem; /* 20px */
     line-height: 1.5;
+  }
+
+  /* WCAG 2.2 AA (1.4.11 / 2.4.7): een contrastrijke focus-indicator — zwart op wit
+     ≈ 21:1 — náást de merk-oranje accentrand (#ee7203 is op zichzelf maar 2,98:1).
+     Box-shadow i.p.v. outline, zodat de component-`outline-none` (die de oranje rand
+     de hoofdrol geeft) deze indicator niet wegdrukt. Dekt knoppen, links, inputs,
+     selects, textareas en de tegels in één plek. */
+  :where(a, button, input, select, textarea):focus-visible {
+    box-shadow:
+      0 0 0 2px var(--background),
+      0 0 0 4px var(--foreground);
   }
 }
