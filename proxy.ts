@@ -26,5 +26,10 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Publieke PWA-assets (manifest + icons) MOETEN buiten de login-redirect blijven:
+  // de browser haalt /manifest.webmanifest doorgaans zonder cookie op → anders 307→/login
+  // → ongeldige manifest → niet installeerbaar. Idem /icon.svg en /icons/* (door de manifest gerefereerd).
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon.svg|icons/).*)',
+  ],
 }
