@@ -1,7 +1,9 @@
 # Onderzoeksbijlage — Branding & huisstijl Bibliotheek Rotterdam
 
-> **Status:** informatief · webonderzoek d.d. 2026-06-11 · alle tokens komen uit de live site-assets, tenzij gemarkeerd als afgeleid/schatting.
+> **Status:** informatief onderzoek · webonderzoek d.d. 2026-06-11 · alle tokens komen uit de live site-assets, tenzij gemarkeerd als afgeleid/schatting.
 > Hoort bij: [product-spec.md](../product-spec.md)
+>
+> **⚠️ Leidend voor de app-huisstijl is het design-spec [compacte hybride huisstijl](../superpowers/specs/2026-06-12-digiplein-compacte-hybride-huisstijl-design.md)** (2026-06-12, goedgekeurde ontwerprichting). Dat spec bepaalt de **visuele structuur**: lichtgrijze pagina-achtergrond, compacte witte header, volle oranje navigatiebalk, zoek-/filterblok en witte plectrum-contentkaarten. Deze onderzoeksbijlage blijft de **bron voor de merk-details**: kleur-rollen, Poppins, de zwarte primaire pill-knop, het plectrum-motief en de toegankelijkheids-hardstops. **Conflictregel:** bij twijfel over structuur/layout wint het design-spec; bij twijfel over merkkleuren/typografie/hardstops wint deze bijlage. Implementatie: [docs/plans/2026-06-12-compacte-hybride-huisstijl-implementatieplan.md](../plans/2026-06-12-compacte-hybride-huisstijl-implementatieplan.md).
 
 ## Merkanalyse
 
@@ -94,6 +96,11 @@ Er is dus **geen apart heading- vs. body-font**: alles is Poppins, hiërarchie o
 - De vorige (Joomla-)site had een voorlees-/screenreader-plugin; op de nieuwe site is zo'n widget niet aangetroffen.
 
 ## Advies: vertaling naar onze app
+
+> Deze sectie levert de **merk-details** (kleur-rollen, vorm, typografie) voor de app. De **visuele structuur** (app-shell, oranje navigatiebalk, grijze achtergrond, zoek-/filterblok, contentkaarten en lijstpatroon) volgt sinds 2026-06-12 het design-spec [compacte hybride huisstijl](../superpowers/specs/2026-06-12-digiplein-compacte-hybride-huisstijl-design.md) — **dat is leidend**. De tokens en hardstops hieronder blijven bindend en worden door dat spec hergebruikt, met drie correcties uit de [branding-review](../reviews/branding-review-2026-06-12.md):
+> 1. **wit op merk-oranje** alleen voor groot/bold/icon — normale tekst op oranje is zwart, tekst op wit is `#b35400` (nooit `#ee7203`);
+> 2. **`--success-foreground` naar zwart** (wit op `#28a84f` = 3,1:1, onder AA) — statuslabels gebruiken `text-success-text` op een lichte container;
+> 3. een gedeelde **`Checkbox`-component** (accent-color `--brand`, 4px-radius, dezelfde focus-indicator) i.p.v. native checkboxen met browser-blauw.
 
 Voorstel voor MD3-achtige rollen, gebaseerd op de geziene waarden. Keuzes/afwijkingen zijn als zodanig gemarkeerd.
 
