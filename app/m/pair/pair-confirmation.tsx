@@ -48,19 +48,25 @@ function missingFragmentState(): ViewState {
 }
 
 export function PairConfirmation() {
-  const [initialInput] = useState<PairingFragment | null>(() => parseFragment())
-  const [state, setState] = useState<ViewState>(() =>
-    initialInput ? { status: 'checking' } : missingFragmentState()
-  )
+  const [state, setState] = useState<ViewState>({ status: 'checking' })
   const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    if (!initialInput) return
     let active = true
-    void getPairingForApproval(initialInput).then((result) => {
+    const input = parseFragment()
+    if (!input) {
+      queueMicrotask(() => {
+        if (active) setState(missingFragmentState())
+      })
+      return () => {
+        active = false
+      }
+    }
+
+    void getPairingForApproval(input).then((result) => {
       if (!active) return
       if (result.ok) {
-        setState({ status: 'ready', input: initialInput, pairing: result.pairing })
+        setState({ status: 'ready', input, pairing: result.pairing })
       } else {
         setState({ status: 'invalid', error: result.error })
       }
@@ -69,7 +75,7 @@ export function PairConfirmation() {
     return () => {
       active = false
     }
-  }, [initialInput])
+  }, [])
 
   function approve() {
     if (state.status !== 'ready') return

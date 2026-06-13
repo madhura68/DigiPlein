@@ -66,7 +66,7 @@ describe('PairConfirmation', () => {
     render(<PairConfirmation />)
 
     expect(
-      screen.getByText(/scan de qr-code opnieuw/i)
+      await screen.findByText(/scan de qr-code opnieuw/i)
     ).toBeInTheDocument()
     expect(mocks.getPairingForApproval).not.toHaveBeenCalled()
   })
