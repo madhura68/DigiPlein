@@ -1,6 +1,7 @@
 import { APP_NAME } from '@/lib/app-name'
 import { Card } from '@/components/ui/card'
 import { LoginForm } from './login-form'
+import { QrLoginButton } from './qr-login-button'
 
 export default function LoginPage() {
   return (
@@ -11,6 +12,12 @@ export default function LoginPage() {
           <p className="text-muted-foreground">{APP_NAME} — cursusplanning</p>
         </div>
         <LoginForm />
+        <div className="flex items-center gap-3 text-sm font-bold text-muted-foreground">
+          <span className="h-px flex-1 bg-outline-variant" />
+          <span>of</span>
+          <span className="h-px flex-1 bg-outline-variant" />
+        </div>
+        <QrLoginButton />
       </Card>
     </main>
   )

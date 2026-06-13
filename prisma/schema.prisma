@@ -56,15 +56,23 @@ enum ActorType {
   SYSTEM
 }
 
+enum PairingStatus {
+  pending
+  approved
+  consumed
+  cancelled
+}
+
 model StaffMember {
-  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name         String
-  email        String    @unique
-  passwordHash String    @map("password_hash")
-  role         StaffRole @default(STAFF)
-  isActive     Boolean   @default(true) @map("is_active")
-  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String         @unique
+  passwordHash  String         @map("password_hash")
+  role          StaffRole      @default(STAFF)
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  loginPairings LoginPairing[]
 
   @@map("staff_members")
 }
@@ -213,4 +221,23 @@ model AuditLog {
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   @@map("audit_logs")
+}
+
+model LoginPairing {
+  id               String        @id @default(cuid())
+  secretHash       String        @map("secret_hash")
+  desktopTokenHash String        @map("desktop_token_hash")
+  status           PairingStatus @default(pending)
+  staffId          String?       @map("staff_id") @db.Uuid
+  desktopUa        String?       @map("desktop_ua") @db.VarChar(255)
+  desktopIp        String?       @map("desktop_ip") @db.VarChar(45)
+  createdAt        DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt        DateTime      @map("expires_at") @db.Timestamptz
+  approvedAt       DateTime?     @map("approved_at") @db.Timestamptz
+  consumedAt       DateTime?     @map("consumed_at") @db.Timestamptz
+  staff            StaffMember?  @relation(fields: [staffId], references: [id], onDelete: SetNull)
+
+  @@index([expiresAt])
+  @@index([status, expiresAt])
+  @@map("login_pairings")
 }
