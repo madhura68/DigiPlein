@@ -5,6 +5,8 @@ export interface SessionData {
   staffId: string
   name: string
   role: StaffRole
+  paired?: boolean
+  pairedExpiresAt?: number
 }
 
 export const sessionOptions: SessionOptions = {
