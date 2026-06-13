@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "./styles/theme.css";
 
+/* Genereer de utilities die de gevendorde scrum4me-copilot-kit gebruikt (pad relatief aan dit bestand). */
+@source "../vendor/scrum4me-copilot/kit";
+
 /*
  * Merk-oranje (#ee7203) uitsluitend als VLAK, RAND of FOCUS — nooit als tekst
  * (hardstop 4: oranje op wit = 2,98:1). Bewust géén `text-brand`-utility; de
