@@ -3,6 +3,7 @@ import { getIronSession } from 'iron-session'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { isPairedSessionExpired } from '@/lib/auth/pairing'
 import { prisma } from '@/lib/db'
 import { sessionOptions, type SessionData } from '@/lib/session'
 
@@ -25,6 +26,9 @@ export async function getSession() {
 export async function requireStaff(): Promise<SessionData> {
   const session = await getSession()
   if (!session.staffId) redirect('/login')
+  if (isPairedSessionExpired(session)) {
+    redirect('/api/auth/logout?reason=paired-expired')
+  }
   return session
 }
 

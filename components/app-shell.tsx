@@ -50,7 +50,7 @@ export function AppShell({ name, role }: { name: string; role: StaffRole }) {
               {name} · {STAFF_ROLE_LABELS[role]}
             </span>
             <form action={logout}>
-              <Button type="submit" variant="secondary" size="sm">
+              <Button type="submit" variant="secondary">
                 Uitloggen
               </Button>
             </form>

@@ -24,6 +24,11 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     ).toBeInTheDocument()
   })
 
+  it('houdt de uitlogknop op minimaal 44px klikhoogte', () => {
+    render(<AppShell name="Sandra" role="ADMIN" />)
+    expect(screen.getByRole('button', { name: 'Uitloggen' })).toHaveClass('h-11')
+  })
+
   it('STAFF ziet geen Audit-log', () => {
     render(<AppShell name="Bea" role="STAFF" />)
     expect(
