@@ -4,6 +4,8 @@
 
 **Goal:** Add a responsive overlay sidebar menu for phone/tablet while preserving the current desktop navigation.
 
+**Status:** implemented and verified on 2026-06-13. Branch `codex/responsive-sidebar-menu` was pushed and PR #10 was opened on Forgejo. The checklist below is retained as the execution plan; the implemented code lives in `components/nav-items.ts`, `components/mobile-nav-drawer.tsx`, and `components/app-shell.tsx`.
+
 **Architecture:** Extract the navigation model into a small shared module, keep `AppShell` as the shell orchestrator, and add a focused `MobileNavDrawer` component built with `@base-ui/react/dialog`. Desktop keeps the current orange nav; below `lg` the orange nav is hidden and the header shows a `Menu` button that opens the drawer.
 
 **Tech Stack:** Next.js App Router, React 19, TypeScript strict, Tailwind CSS v4, `@base-ui/react/dialog`, Vitest + Testing Library.

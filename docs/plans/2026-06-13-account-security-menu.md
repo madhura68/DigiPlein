@@ -1,8 +1,9 @@
 ---
 title: "Accountmenu: wachtwoord wijzigen en QR-login starten"
-status: "approved"
+status: "implemented"
 date: "2026-06-13"
 product: "DigiPlein"
+last_verified: "2026-06-13"
 ---
 
 # Accountmenu: wachtwoord wijzigen en QR-login starten
@@ -12,6 +13,12 @@ product: "DigiPlein"
 Ingelogde medewerkers krijgen een duidelijke accountplek om hun eigen
 wachtwoord te wijzigen en om de bestaande QR-pairing loginflow te starten.
 De bestaande e-mail/wachtwoord-login en QR-login op `/login` blijven werken.
+
+## Resultaat
+
+Gerealiseerd op branch `codex/account-security-menu` en gemerged naar
+`main` via PR #9. Het `Account` menu-item is onderdeel van de gedeelde
+navigatie en blijft actief op `/account/*`.
 
 ## Gekozen aanpak
 

@@ -16,6 +16,15 @@ Specificatie-set voor een interne web-app voor het digivaardigheidsteam van Bibl
 | [research/aanbod-bibliotheek-rotterdam.md](research/aanbod-bibliotheek-rotterdam.md) | Volledig dienstenaanbod + 23 locaties + vormvarianten | Uitbreidingscontext |
 | [research/avg-privacy-clientgegevens.md](research/avg-privacy-clientgegevens.md) | AVG: grondslagen, bindend veldenadvies, bewaartermijnen, FG/governance | Randvoorwaarden; gesprek met FG |
 
+## Aanvullende uitvoeringsdocs
+
+| Document | Wat staat erin |
+|---|---|
+| [plans/2026-06-13-account-security-menu.md](plans/2026-06-13-account-security-menu.md) | Gerealiseerde accountplek voor wachtwoord wijzigen en QR-login starten |
+| [superpowers/specs/2026-06-13-digiplein-qr-pairing-login-design.md](superpowers/specs/2026-06-13-digiplein-qr-pairing-login-design.md) | Security-ontwerp van de QR-pairing loginflow |
+| [superpowers/specs/2026-06-13-responsive-sidebar-menu-design.md](superpowers/specs/2026-06-13-responsive-sidebar-menu-design.md) | Ontwerpkeuze voor mobiele/tablet overlay-drawer en behoud van desktopnavigatie |
+| [superpowers/plans/2026-06-13-responsive-sidebar-menu.md](superpowers/plans/2026-06-13-responsive-sidebar-menu.md) | Implementatieplan en verificatiepad voor het responsive sidebar-menu |
+
 ## Kern in vijf regels
 
 1. **MVP** = beheer van medewerkers, vrijwilligers, cliënten en cursusaanbod + AVG-basics (export/verwijdering, audit-log, notitie-discipline) + chat-window. Daarna: rooster (M3) en leertrajecten met sessiebewaking (M4).

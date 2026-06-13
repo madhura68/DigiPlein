@@ -176,13 +176,14 @@ Volledige analyse en tokens: [research/branding-bibliotheek-rotterdam.md](resear
 ### 6.3 Toegankelijkheid & taal
 
 - **WCAG 2.2 AA** als doel voor alle schermen — strenger dan de bron-site (die heeft nog geen toegankelijkheidsverklaring). Het team zelf (vrijwilligers van o.a. 68+) én de context (digivaardigheid!) maken dit een kernrandvoorwaarde, geen vinkje: toetsenbordnavigatie, zichtbare focus, contrast ≥ 4,5:1, grote klikdoelen, geen tijdsdruk-interacties.
+- **Responsive navigatie:** desktop houdt de compacte witte header met oranje hoofdnavigatie; telefoon en tablet gebruiken een overlay-drawer achter een `Menu`-knop. De drawer gebruikt dezelfde rolfiltering en actieve route-markering als desktop, zodat mobiele bruikbaarheid geen apart navigatiemodel introduceert.
 - Alle UI-tekst Nederlands, B1; formulieren die cliënten te zien krijgen (print: privacy-uitleg, toestemmingsformulier) extra eenvoudig, met mondelinge toelichting als werkwijze.
 - Responsive: desktop voor Sandra, tablet (iPad — Joke) en telefoon volwaardig bruikbaar.
 
 ### 6.4 Techniek, beveiliging & hosting
 
 - **Stack** (details + rationale in [mvp-spec.md](mvp-spec.md) §9): Next.js (App Router) + TypeScript strict, Tailwind + shadcn/ui met de huisstijl-tokens, Prisma + PostgreSQL, sessie-gebaseerde auth. Bewust dezelfde stack als de overige tooling van de bouwer — bekend terrein, en het chat-window wordt in dit ecosysteem ontwikkeld.
-- **Beveiliging:** alles achter login (geen enkele publieke route met data), rollen (beheerder/medewerker; vrijwilliger met beperkte zelfservice-scope), wachtwoord-hashing (bcrypt), magic-link met korte geldigheid voor vrijwilligers, HTTPS-only, audit-log op cliëntmutaties en chat-wijzigingen, back-ups versleuteld.
+- **Beveiliging:** alles achter login (geen enkele publieke route met data), rollen (beheerder/medewerker; vrijwilliger met beperkte zelfservice-scope), wachtwoord-hashing (bcrypt), eigen wachtwoord wijzigen alleen na controle van het huidige wachtwoord, QR-pairing als extra medewerker-loginpad met kortlevende secrets en mobiele bevestiging, magic-link met korte geldigheid voor vrijwilligers, HTTPS-only, audit-log op cliëntmutaties en chat-wijzigingen, back-ups versleuteld.
 - **Hosting:** EU-regio verplicht (EER-verwerking); opties: Vercel (EU-functions) + Neon (EU) óf de eigen Ubuntu-server (Docker + Caddy) — keuze is een open vraag (§10), maar in beide gevallen met verwerkersovereenkomst en in beheer overdraagbaar aan de bibliotheek.
 - **Omgevingen:** een demo-/testomgeving met dummydata staat los van productie; productie pas gevuld na §6.1-akkoord.
 
