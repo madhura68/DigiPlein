@@ -16,7 +16,9 @@ function allMigrationSql(): string {
 
 describe('Prisma QR-pairing schema', () => {
   it('definieert PairingStatus en LoginPairing met uuid staff_id', () => {
-    expect(schema).toMatch(/enum PairingStatus\s*{[^}]*pending[^}]*approved[^}]*consumed[^}]*cancelled[^}]*}/s)
+    expect(schema).toMatch(
+      /enum PairingStatus\s*{[\s\S]*pending[\s\S]*approved[\s\S]*consumed[\s\S]*cancelled[\s\S]*}/
+    )
     expect(schema).toMatch(/model LoginPairing\s*{/)
     expect(schema).toMatch(/staffId\s+String\?\s+@map\("staff_id"\)\s+@db\.Uuid/)
     expect(schema).toMatch(/staff\s+StaffMember\?\s+@relation\(fields: \[staffId\], references: \[id\], onDelete: SetNull\)/)
