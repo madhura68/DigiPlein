@@ -1,0 +1,123 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+const mocks = vi.hoisted(() => {
+  const staffMember = {
+    findUnique: vi.fn(),
+    update: vi.fn(),
+  }
+  return {
+    compare: vi.fn(),
+    hash: vi.fn(),
+    requireStaff: vi.fn(),
+    staffMember,
+    prisma: { staffMember },
+  }
+})
+
+vi.mock('bcryptjs', () => ({
+  default: { compare: mocks.compare, hash: mocks.hash },
+}))
+vi.mock('@/lib/auth', () => ({ requireStaff: mocks.requireStaff }))
+vi.mock('@/lib/db', () => ({ prisma: mocks.prisma }))
+
+import { changeOwnPassword } from '@/app/account/wachtwoord/actions'
+
+const { compare, hash, requireStaff, staffMember } = mocks
+
+function fd(fields: Record<string, string>): FormData {
+  const form = new FormData()
+  for (const [key, value] of Object.entries(fields)) form.set(key, value)
+  return form
+}
+
+function validForm(overrides: Partial<Record<string, string>> = {}) {
+  return fd({
+    currentPassword: 'huidig-wachtwoord',
+    newPassword: 'nieuw-wachtwoord',
+    confirmPassword: 'nieuw-wachtwoord',
+    ...overrides,
+  })
+}
+
+beforeEach(() => {
+  compare.mockReset()
+  compare.mockResolvedValue(true)
+  hash.mockReset()
+  hash.mockResolvedValue('hashed-new')
+  requireStaff.mockReset()
+  requireStaff.mockResolvedValue({ staffId: 'staff-1', role: 'STAFF' })
+  staffMember.findUnique.mockReset()
+  staffMember.findUnique.mockResolvedValue({
+    id: 'staff-1',
+    isActive: true,
+    passwordHash: 'hashed-current',
+  })
+  staffMember.update.mockReset()
+  staffMember.update.mockResolvedValue({ id: 'staff-1' })
+})
+
+describe('account wachtwoord action', () => {
+  it('vereist een medewerker-sessie', async () => {
+    requireStaff.mockRejectedValue(Object.assign(new Error('login'), { digest: 'NEXT_REDIRECT' }))
+
+    await expect(changeOwnPassword({}, validForm())).rejects.toMatchObject({
+      digest: 'NEXT_REDIRECT',
+    })
+    expect(staffMember.findUnique).not.toHaveBeenCalled()
+  })
+
+  it('weigert te kort nieuw wachtwoord zonder database-update', async () => {
+    const res = await changeOwnPassword(
+      {},
+      validForm({ newPassword: 'kort', confirmPassword: 'kort' })
+    )
+
+    expect(res.status).toBe(422)
+    expect(res.error).toMatch(/minimaal 8/i)
+    expect(staffMember.update).not.toHaveBeenCalled()
+  })
+
+  it('weigert mismatch tussen nieuw wachtwoord en bevestiging', async () => {
+    const res = await changeOwnPassword(
+      {},
+      validForm({ confirmPassword: 'ander-wachtwoord' })
+    )
+
+    expect(res.status).toBe(422)
+    expect(res.error).toMatch(/overeen/i)
+    expect(staffMember.update).not.toHaveBeenCalled()
+  })
+
+  it('weigert fout huidig wachtwoord neutraal', async () => {
+    compare.mockResolvedValue(false)
+
+    const res = await changeOwnPassword({}, validForm())
+
+    expect(res.status).toBe(401)
+    expect(res.error).toBe('Wachtwoord wijzigen is niet gelukt.')
+    expect(staffMember.update).not.toHaveBeenCalled()
+  })
+
+  it('weigert ontbrekend of gedeactiveerd account neutraal', async () => {
+    staffMember.findUnique.mockResolvedValue({ id: 'staff-1', isActive: false })
+
+    const res = await changeOwnPassword({}, validForm())
+
+    expect(res.status).toBe(401)
+    expect(res.error).toBe('Wachtwoord wijzigen is niet gelukt.')
+    expect(compare).not.toHaveBeenCalled()
+    expect(staffMember.update).not.toHaveBeenCalled()
+  })
+
+  it('hasht en bewaart het nieuwe wachtwoord bij succes', async () => {
+    const res = await changeOwnPassword({}, validForm())
+
+    expect(res.ok).toBe(true)
+    expect(compare).toHaveBeenCalledWith('huidig-wachtwoord', 'hashed-current')
+    expect(hash).toHaveBeenCalledWith('nieuw-wachtwoord', 10)
+    expect(staffMember.update).toHaveBeenCalledWith({
+      where: { id: 'staff-1' },
+      data: { passwordHash: 'hashed-new' },
+    })
+  })
+})
