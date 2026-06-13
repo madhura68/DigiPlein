@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { logout } from '@/app/logout/actions'
+import { MobileNavDrawer } from '@/components/mobile-nav-drawer'
 import { isActive, navItemsForRole } from '@/components/nav-items'
 import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/lib/app-name'
@@ -31,20 +32,28 @@ export function AppShell({ name, role }: { name: string; role: StaffRole }) {
             </span>
             {APP_NAME}
           </Link>
-          <div className="flex items-center gap-4 text-sm">
-            <span className="text-muted-foreground">
-              {name} · {STAFF_ROLE_LABELS[role]}
-            </span>
-            <form action={logout}>
-              <Button type="submit" variant="secondary">
-                Uitloggen
-              </Button>
-            </form>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="hidden items-center gap-4 lg:flex">
+              <span className="text-muted-foreground">
+                {name} · {STAFF_ROLE_LABELS[role]}
+              </span>
+              <form action={logout}>
+                <Button type="submit" variant="secondary">
+                  Uitloggen
+                </Button>
+              </form>
+            </div>
+            <MobileNavDrawer
+              items={items}
+              name={name}
+              pathname={pathname}
+              role={role}
+            />
           </div>
         </div>
       </div>
 
-      <nav aria-label="Hoofdnavigatie" className="bg-brand">
+      <nav aria-label="Hoofdnavigatie" className="hidden bg-brand lg:block">
         <ul className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4">
           {items.map((item) => {
             const active = isActive(pathname, item.href)
