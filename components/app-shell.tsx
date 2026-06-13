@@ -20,6 +20,7 @@ const NAV: NavItem[] = [
   { href: '/clienten', label: 'Cliënten' },
   { href: '/vrijwilligers', label: 'Vrijwilligers' },
   { href: '/cursusaanbod', label: 'Cursusaanbod' },
+  { href: '/account', label: 'Account' },
   { href: '/audit', label: 'Audit-log', adminOnly: true },
 ]
 
