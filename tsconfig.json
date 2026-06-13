@@ -15,7 +15,8 @@
     "incremental": true,
     "plugins": [{ "name": "next" }],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@s4m-kit/*": ["./vendor/scrum4me-copilot/kit/*"]
     }
   },
   "include": [
@@ -25,5 +26,14 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "vendor/scrum4me-copilot/service",
+    "vendor/scrum4me-copilot/vendor",
+    "vendor/scrum4me-copilot/**/__tests__",
+    "vendor/scrum4me-copilot/**/test",
+    "vendor/scrum4me-copilot/**/*.test.ts",
+    "vendor/scrum4me-copilot/**/*.test.tsx",
+    "vendor/scrum4me-copilot/**/vitest.config.ts"
+  ]
 }

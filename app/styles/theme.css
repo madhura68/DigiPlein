@@ -84,6 +84,15 @@
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-bold: 700;
+
+  /* scrum4me-copilot kit-contract: ontbrekende tokens als alias op DigiPlein-rollen
+     (vendor/scrum4me-copilot/kit/README.md §3b-bis). */
+  --accent: var(--surface-variant);
+  --accent-foreground: var(--foreground);
+  --input-background: var(--card);            /* NIET --input: dat is de veldrand */
+  --error-container: var(--error);
+  --error-container-foreground: var(--error-foreground);
+  --radius: var(--radius-card);
 }
 
 @theme inline {
@@ -128,6 +137,16 @@
   --radius-pill: var(--radius-pill);
   --radius-field: var(--radius-field);
   --radius-card: var(--radius-card);
+
+  /* scrum4me-copilot kit-contract utilities (bg-accent, bg-input-background, bg-error-container, rounded-sm/md/lg) */
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-input-background: var(--input-background);
+  --color-error-container: var(--error-container);
+  --color-error-container-foreground: var(--error-container-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
 
   --font-sans: var(--font-poppins), Arial, sans-serif;
 }
