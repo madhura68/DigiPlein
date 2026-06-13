@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { logout } from '@/app/logout/actions'
+import { isActive, navItemsForRole } from '@/components/nav-items'
 import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/lib/app-name'
 import { STAFF_ROLE_LABELS } from '@/lib/enums'
@@ -13,25 +14,9 @@ import { STAFF_ROLE_LABELS } from '@/lib/enums'
 // daaronder een volle oranje navigatiebalk. Hele shell print:hidden, zodat export-/
 // printpagina's schoon blijven. Nav-labels zijn ZWART (wit op #ee7203 = 2,98:1, faalt
 // AA; zwart = 7,0:1 — en zwart-op-kleurvlak is het Bibliotheek Rotterdam-patroon).
-type NavItem = { href: string; label: string; adminOnly?: boolean }
-
-const NAV: NavItem[] = [
-  { href: '/', label: 'Start' },
-  { href: '/clienten', label: 'Cliënten' },
-  { href: '/vrijwilligers', label: 'Vrijwilligers' },
-  { href: '/cursusaanbod', label: 'Cursusaanbod' },
-  { href: '/account', label: 'Account' },
-  { href: '/audit', label: 'Audit-log', adminOnly: true },
-]
-
-function isActive(pathname: string, href: string): boolean {
-  if (href === '/') return pathname === '/'
-  return pathname === href || pathname.startsWith(`${href}/`)
-}
-
 export function AppShell({ name, role }: { name: string; role: StaffRole }) {
   const pathname = usePathname()
-  const items = NAV.filter((item) => !item.adminOnly || role === 'ADMIN')
+  const items = navItemsForRole(role)
 
   return (
     <header className="print:hidden">
