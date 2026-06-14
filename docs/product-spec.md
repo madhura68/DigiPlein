@@ -190,9 +190,11 @@ Volledige analyse en tokens: [research/branding-bibliotheek-rotterdam.md](resear
 
 Het chat-window is het **Scrum4Me-Copilot**-component (ingebed achter een feature-flag). Medewerkers passen de app aan via natuurlijke taal — een AI-agent voert uit. Dat is de uitbreidingsstrategie van dit product; de AVG-kaders worden door het Copilot-platform afgedwongen, *op productniveau*, in twee lagen:
 
-- **Preventief — content-policy-gate (per product).** De Copilot weigert idee-/feature-verzoeken die een verboden veld/feature uit §6.1 noemen (BSN, art. 9-gegevens, niveau-labels, cliëntdata naar externe diensten), *fail-closed*, vóór er iets wordt vastgelegd. De weigerlijst is de bron `lib/avg.ts`, gecureerd geseed in de Scrum4Me-DB als het product-`content_policy`. Elk nieuw persoonsgegevens-veld vereist doel + bewaartermijn en wordt gemarkeerd voor FG-toets.
+- **Preventief — content-policy-gate (per product).** De Copilot weigert idee-/feature-verzoeken die een verboden veld/feature uit §6.1 noemen (BSN, art. 9-gegevens, niveau-labels, cliëntdata naar externe diensten), *fail-closed*, vóór er iets wordt vastgelegd. De weigerlijst is de bron `lib/avg.ts`, gecureerd geseed in de Scrum4Me-DB als het product-`content_policy`.
 - **Correctief — job-flow-approval.** Structurele wijzigingen (schema/gedrag) lopen via een plan→review→uitvoer-flow waarin een beheerder (RW/PO) plan/PR/deploy expliciet bevestigt; schemawijzigingen gaan via migraties met reviewmoment en backup, en zijn terug te draaien. Zonder die bevestiging wordt niets uitgevoerd.
 - **Audit:** elke chat-geïnitieerde wijziging (wie, wat, wanneer, welke migratie) staat in het audit-log.
+
+Onafhankelijk van de gate-laag geldt de **dataminimalisatie-eis** uit §6.1: elk nieuw persoonsgegevens-veld vereist een doel + bewaartermijn in het verzoek en wordt gemarkeerd voor FG-toets.
 
 Dit vervangt de eerdere bespoke in-app guardrails (ST-202): de ingebedde Copilot-chat raakt DigiPlein's eigen check/confirm-endpoints niet meer. De **form-level** AVG-borging in de cliëntregistratie (Zod `.strict()` + Prisma-model + `lib/avg.ts`) blijft ongewijzigd. Het integratiecontract (hoe het component technisch aanhaakt) staat in [mvp-spec.md](mvp-spec.md) §10.
 
