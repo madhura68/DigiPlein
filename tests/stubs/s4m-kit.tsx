@@ -18,5 +18,6 @@ export function createS4MRoutes(_config: unknown) {
   return {
     GET: async () => new Response(null, { status: 204 }),
     POST: async () => new Response(null, { status: 204 }),
+    PATCH: async () => new Response(null, { status: 204 }),
   }
 }

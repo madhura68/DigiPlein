@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic' // VERPLICHT voor de SSE-stream
 // Zie vendor/scrum4me-copilot/kit/README.md §4.
 const tools = new ToolRegistry([])
 
-export const { GET, POST } = createS4MRoutes({
+export const { GET, POST, PATCH } = createS4MRoutes({
   requireSession: copilotRequireSession,
   tools,
   serviceUrl: process.env.S4M_COPILOT_URL!, // interne URL van de centrale scrum4me-copilot-service
