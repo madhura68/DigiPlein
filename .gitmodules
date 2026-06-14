@@ -1,3 +1,4 @@
 [submodule "vendor/scrum4me-copilot"]
 	path = vendor/scrum4me-copilot
 	url = https://git.jp-visser.nl/janpeter/scrum4me-copilot.git
+	branch = main
