@@ -78,12 +78,54 @@ describe('staff invite mail', () => {
     const message = runSendmail.mock.calls[0][0].input
     expect(message).toContain('From: DigiPlein <noreply@example.nl>')
     expect(message).toContain('To: sandra@example.nl')
+    expect(message).toContain(
+      'Content-Type: multipart/alternative; boundary="digiplein-staff-invite"'
+    )
+    expect(message).toContain('--digiplein-staff-invite')
+    expect(message).toContain('Content-Type: text/plain; charset=UTF-8')
+    expect(message).toContain('Content-Type: text/html; charset=UTF-8')
     expect(message).toContain('https://digiplein.example/uitnodiging/secret-token-123')
+    expect(message).toContain(
+      'href="https://digiplein.example/uitnodiging/secret-token-123"'
+    )
+    expect(message).toContain('#eef0f5')
+    expect(message).toContain('#ffffff')
+    expect(message).toContain('#ee7203')
+    expect(message).toContain('#b35400')
+    expect(message).toContain('#000000')
     expect(info).toHaveBeenCalledWith(
       '[mail] staff invite accepted by smtp transport'
     )
     expect(info.mock.calls.flat().join(' ')).not.toContain('sandra@example.nl')
     expect(info.mock.calls.flat().join(' ')).not.toContain('secret-token-123')
+    info.mockRestore()
+  })
+
+  it('escapes staff names in the html invite body', async () => {
+    const info = vi.spyOn(console, 'info').mockImplementation(() => undefined)
+    const runSendmail = vi.fn().mockResolvedValue({
+      code: 0,
+      stderr: '',
+    })
+
+    await sendStaffInviteMail(
+      {
+        appBaseUrl: 'https://digiplein.example',
+        mailTransport: 'smtp',
+        to: 'sandra@example.nl',
+        staffName: 'Sandra <Beheer>',
+        token: 'secret-token-123',
+        from: 'DigiPlein <noreply@example.nl>',
+        sendmailPath: '/usr/sbin/sendmail',
+      },
+      { runSendmail }
+    )
+
+    const message = runSendmail.mock.calls[0][0].input
+    const htmlPart =
+      message.split('Content-Type: text/html; charset=UTF-8')[1] ?? ''
+    expect(htmlPart).toContain('Hallo Sandra &lt;Beheer&gt;,')
+    expect(htmlPart).not.toContain('Hallo Sandra <Beheer>,')
     info.mockRestore()
   })
 
