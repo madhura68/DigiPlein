@@ -1,6 +1,7 @@
 'use server'
 
 import bcrypt from 'bcryptjs'
+import { redirect } from 'next/navigation'
 
 import { requireStaff } from '@/lib/auth'
 import { staffPasswordSetAuditSummary, writeAuditLog } from '@/lib/audit'
@@ -79,6 +80,10 @@ export async function changeOwnPassword(
     })
     delete session.mustChangePassword
     await session.save()
+    // Eerste-wachtwoordflow (na invite-accept): stuur de nieuwe medewerker
+    // de app in i.p.v. achter te laten op de wachtwoordpagina. De gewone
+    // flow (ingelogd zelf wijzigen) houdt de bevestigingsmelding hieronder.
+    redirect('/')
   }
 
   return { ok: true }
