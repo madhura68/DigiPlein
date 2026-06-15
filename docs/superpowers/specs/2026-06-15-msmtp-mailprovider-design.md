@@ -2,11 +2,13 @@
 
 ## Doel
 
-DigiPlein kan medewerkeruitnodigingen echt per e-mail versturen zonder eigen SMTP-credentials in de app te beheren. De productiecontainer gebruikt daarvoor de sendmail-compatibele interface van `msmtp-mta`.
+DigiPlein kan medewerkeruitnodigingen echt per e-mail versturen zonder eigen SMTP-credentials in de app te beheren. De productiecontainer gebruikt daarvoor een in de image gebundelde `msmtp`-runtime met een sendmail-compatibele entrypoint.
 
 ## Gekozen Aanpak
 
-`MAIL_TRANSPORT=smtp` betekent in DigiPlein: roep een sendmail-compatible binary aan met een volledige RFC822-mail op stdin. Standaard is dat `/usr/sbin/sendmail -t -oi`. De productie-image installeert `msmtp` en zet `/usr/sbin/sendmail` als symlink naar `/usr/bin/msmtp`, waardoor relay/TLS/providerconfig buiten de app in `/etc/msmtprc` blijft.
+`MAIL_TRANSPORT=smtp` betekent in DigiPlein: roep een sendmail-compatible binary aan met een volledige RFC822-mail op stdin. Standaard blijft dat `/usr/sbin/sendmail -t -oi`; de transport-code hoeft hiervoor niet te wijzigen.
+
+De definitieve deploy-aanpak vertrouwt niet op een vooraf bestaande host-`msmtp-mta` of host-`/usr/sbin/sendmail` shim. Containers zijn geïsoleerd, en de oorspronkelijke runner-image bevatte alleen busybox-sendmail. Daarom bundelt de productie-image zelf `msmtp` en zet `/usr/sbin/sendmail` als symlink naar `/usr/bin/msmtp`. Deze image/deploy-aanpassing hoort bij DigiPlein PR #24.
 
 `MAIL_TRANSPORT=noop` blijft de veilige default voor development/test en verstuurt niets extern.
 
@@ -18,7 +20,7 @@ DigiPlein kan medewerkeruitnodigingen echt per e-mail versturen zonder eigen SMT
 - `MAIL_SENDMAIL_PATH`, optioneel, default `/usr/sbin/sendmail`.
 - `APP_BASE_URL` blijft de basis voor uitnodigingslinks.
 
-De app configureert geen SMTP-host, gebruikersnaam of wachtwoord. Die horen in msmtp.
+De app configureert geen SMTP-host, gebruikersnaam of wachtwoord. Die horen in de gemounte msmtp-config.
 
 De container moet een read-only msmtp-config krijgen, bijvoorbeeld:
 
@@ -26,7 +28,21 @@ De container moet een read-only msmtp-config krijgen, bijvoorbeeld:
 /srv/scrum4me/secrets/digiplein-msmtprc:/etc/msmtprc:ro
 ```
 
-De msmtp-config moet permissies hebben die msmtp accepteert voor de runtime-user, of met `passwordeval` werken.
+De msmtp-config komt uit een host-secret en niet uit `~janpeter/.msmtprc`, omdat die user-scoped hostconfig niet zichtbaar is voor de container en niet past bij de `nextjs` runtime-user. Afgesproken hostpad:
+
+```text
+/srv/scrum4me/secrets/digiplein-msmtprc
+```
+
+Het bestand wordt read-only naar `/etc/msmtprc` gemount, met permissies die msmtp accepteert voor uid `1001` (`nextjs`), of met `passwordeval` als dat beter past.
+
+Voor productie wordt een dedicated relay gebruikt in plaats van de host-Gmail-config. `MAIL_FROM` wordt een dedicated afzender, bijvoorbeeld `noreply@digiplein.<tld>`; host, user, password en `from` staan in het secret.
+
+De go-live stappen staan in PR #24 in:
+
+```text
+docs/superpowers/runbooks/2026-06-15-msmtp-deploy-runbook.md
+```
 
 ## Mailinhoud
 
@@ -59,6 +75,9 @@ Als sendmail/msmtp met non-zero exit code eindigt of niet gestart kan worden, re
 
 - `MAIL_TRANSPORT=smtp` roept sendmail aan met `-t -oi`.
 - De runtime-image bevat `msmtp` en `/usr/sbin/sendmail` wijst naar `/usr/bin/msmtp`.
+- De app is niet afhankelijk van host-`msmtp-mta`, host-`/usr/sbin/sendmail` of host-`~/.msmtprc`.
+- SMTP-credentials staan alleen in een read-only gemounte `/etc/msmtprc`.
+- `MAIL_FROM` gebruikt een dedicated DigiPlein-relay-afzender, niet de host-Gmail-config.
 - Een succesvolle sendmail-exit resulteert in `{ transport: 'smtp', skipped: false }`.
 - Een non-zero exit resulteert in een exception naar de bestaande action-catch.
 - `MAIL_FROM` is verplicht zodra `MAIL_TRANSPORT=smtp`.
