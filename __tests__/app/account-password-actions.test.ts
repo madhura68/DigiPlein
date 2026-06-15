@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => {
     requireStaff: vi.fn(),
     staffMember,
     writeAuditLog: vi.fn(),
+    redirect: vi.fn(),
     prisma: { staffMember },
   }
 })
@@ -24,6 +25,7 @@ vi.mock('@/lib/audit', () => ({
   writeAuditLog: mocks.writeAuditLog,
 }))
 vi.mock('@/lib/db', () => ({ prisma: mocks.prisma }))
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 
 import { changeOwnPassword } from '@/app/account/wachtwoord/actions'
 
@@ -51,6 +53,12 @@ beforeEach(() => {
   hash.mockResolvedValue('hashed-new')
   mocks.writeAuditLog.mockReset()
   mocks.writeAuditLog.mockResolvedValue(undefined)
+  mocks.redirect.mockReset()
+  mocks.redirect.mockImplementation(() => {
+    throw Object.assign(new Error('NEXT_REDIRECT'), {
+      digest: 'NEXT_REDIRECT',
+    })
+  })
   requireStaff.mockReset()
   requireStaff.mockResolvedValue({
     staffId: 'staff-1',
@@ -133,7 +141,7 @@ describe('account wachtwoord action', () => {
     })
   })
 
-  it('forced-password flow vereist geen huidig wachtwoord en wist de sessieflag', async () => {
+  it('forced-password flow vereist geen huidig wachtwoord, wist de sessieflag en gaat naar start', async () => {
     const save = vi.fn()
     const session = {
       staffId: 'staff-1',
@@ -143,12 +151,10 @@ describe('account wachtwoord action', () => {
     }
     requireStaff.mockResolvedValue(session)
 
-    const res = await changeOwnPassword(
-      {},
-      validForm({ currentPassword: '' })
-    )
+    await expect(
+      changeOwnPassword({}, validForm({ currentPassword: '' }))
+    ).rejects.toMatchObject({ digest: 'NEXT_REDIRECT' })
 
-    expect(res.ok).toBe(true)
     expect(compare).not.toHaveBeenCalled()
     expect(hash).toHaveBeenCalledWith('nieuw-wachtwoord', 10)
     expect(staffMember.update).toHaveBeenCalledWith({
@@ -157,6 +163,7 @@ describe('account wachtwoord action', () => {
     })
     expect(session.mustChangePassword).toBeUndefined()
     expect(save).toHaveBeenCalledOnce()
+    expect(mocks.redirect).toHaveBeenCalledWith('/')
     expect(mocks.writeAuditLog).toHaveBeenCalledWith({
       actorType: 'STAFF',
       actorId: 'staff-1',

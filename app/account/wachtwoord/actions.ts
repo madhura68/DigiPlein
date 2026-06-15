@@ -1,6 +1,7 @@
 'use server'
 
 import bcrypt from 'bcryptjs'
+import { redirect } from 'next/navigation'
 
 import { requireStaff } from '@/lib/auth'
 import { staffPasswordSetAuditSummary, writeAuditLog } from '@/lib/audit'
@@ -79,6 +80,7 @@ export async function changeOwnPassword(
     })
     delete session.mustChangePassword
     await session.save()
+    redirect('/')
   }
 
   return { ok: true }
