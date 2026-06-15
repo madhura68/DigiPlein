@@ -9,6 +9,9 @@ const mocks = vi.hoisted(() => {
     compare: vi.fn(),
     hash: vi.fn(),
     requireStaff: vi.fn(),
+    redirect: vi.fn(() => {
+      throw new Error('NEXT_REDIRECT')
+    }),
     staffMember,
     writeAuditLog: vi.fn(),
     prisma: { staffMember },
@@ -24,6 +27,7 @@ vi.mock('@/lib/audit', () => ({
   writeAuditLog: mocks.writeAuditLog,
 }))
 vi.mock('@/lib/db', () => ({ prisma: mocks.prisma }))
+vi.mock('next/navigation', () => ({ redirect: mocks.redirect }))
 
 import { changeOwnPassword } from '@/app/account/wachtwoord/actions'
 
@@ -51,6 +55,7 @@ beforeEach(() => {
   hash.mockResolvedValue('hashed-new')
   mocks.writeAuditLog.mockReset()
   mocks.writeAuditLog.mockResolvedValue(undefined)
+  mocks.redirect.mockClear()
   requireStaff.mockReset()
   requireStaff.mockResolvedValue({
     staffId: 'staff-1',
@@ -133,7 +138,7 @@ describe('account wachtwoord action', () => {
     })
   })
 
-  it('forced-password flow vereist geen huidig wachtwoord en wist de sessieflag', async () => {
+  it('forced-password flow wist de sessieflag en stuurt door naar de app', async () => {
     const save = vi.fn()
     const session = {
       staffId: 'staff-1',
@@ -143,12 +148,10 @@ describe('account wachtwoord action', () => {
     }
     requireStaff.mockResolvedValue(session)
 
-    const res = await changeOwnPassword(
-      {},
-      validForm({ currentPassword: '' })
-    )
+    await expect(
+      changeOwnPassword({}, validForm({ currentPassword: '' }))
+    ).rejects.toThrow('NEXT_REDIRECT')
 
-    expect(res.ok).toBe(true)
     expect(compare).not.toHaveBeenCalled()
     expect(hash).toHaveBeenCalledWith('nieuw-wachtwoord', 10)
     expect(staffMember.update).toHaveBeenCalledWith({
@@ -165,6 +168,15 @@ describe('account wachtwoord action', () => {
       entityId: 'staff-1',
       summary: 'Medewerker heeft wachtwoord ingesteld',
     })
+    // Audit + sessie-save gebeuren vóór de navigatie naar de app.
+    expect(mocks.redirect).toHaveBeenCalledWith('/')
+  })
+
+  it('gewone flow stuurt niet door en bevestigt met ok', async () => {
+    const res = await changeOwnPassword({}, validForm())
+
+    expect(res.ok).toBe(true)
+    expect(mocks.redirect).not.toHaveBeenCalled()
   })
 
   it('gewone flow blijft een huidig wachtwoord eisen', async () => {
