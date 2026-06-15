@@ -32,4 +32,33 @@ describe('lib/env', () => {
       expect(result.data.MAIL_TRANSPORT).toBe('noop')
     }
   })
+
+  it('vereist MAIL_FROM wanneer smtp-mailtransport actief is', () => {
+    const result = envSchema.safeParse({
+      DATABASE_URL: 'postgresql://x',
+      SESSION_SECRET: 'x'.repeat(32),
+      MAIL_TRANSPORT: 'smtp',
+    })
+
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.flatten().fieldErrors.MAIL_FROM).toBeDefined()
+    }
+  })
+
+  it('accepteert smtp-mailtransport met sendmail defaults', () => {
+    const result = envSchema.safeParse({
+      DATABASE_URL: 'postgresql://x',
+      SESSION_SECRET: 'x'.repeat(32),
+      MAIL_TRANSPORT: 'smtp',
+      MAIL_FROM: 'digiplein@example.nl',
+    })
+
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.MAIL_FROM).toBe('digiplein@example.nl')
+      expect(result.data.MAIL_FROM_NAME).toBe('DigiPlein')
+      expect(result.data.MAIL_SENDMAIL_PATH).toBe('/usr/sbin/sendmail')
+    }
+  })
 })

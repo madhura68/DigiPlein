@@ -53,6 +53,11 @@ function isUniqueViolation(error: unknown): boolean {
   )
 }
 
+function staffInviteMailFrom(): string | undefined {
+  if (!env.MAIL_FROM) return undefined
+  return `${env.MAIL_FROM_NAME} <${env.MAIL_FROM}>`
+}
+
 export async function createStaff(
   _prev: MedewerkerActionState,
   formData: FormData
@@ -118,6 +123,8 @@ export async function createStaff(
         to: staff.email,
         staffName: staff.name,
         token,
+        from: staffInviteMailFrom(),
+        sendmailPath: env.MAIL_SENDMAIL_PATH,
       })
     } catch {
       revalidatePath('/medewerkers')
@@ -315,6 +322,8 @@ export async function resendStaffInvite(
       to: result.staff.email,
       staffName: result.staff.name,
       token,
+      from: staffInviteMailFrom(),
+      sendmailPath: env.MAIL_SENDMAIL_PATH,
     })
   } catch {
     return {
