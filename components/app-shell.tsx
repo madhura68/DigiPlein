@@ -23,28 +23,43 @@ function DesktopNavItem({
 
   if (item.children?.length) {
     return (
-      <li className="flex items-stretch">
-        <div className="flex items-stretch">
-          <span
-            aria-current={active ? 'page' : undefined}
-            className={`inline-flex items-center whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground ${
-              active
-                ? 'border-card bg-brand-hover'
-                : 'border-transparent'
-            }`}
-          >
-            {item.label}
-          </span>
-          <ul className="flex items-stretch">
-            {item.children.map((child) => (
-              <DesktopNavItem
-                key={child.href ?? child.label}
-                item={child}
-                pathname={pathname}
-              />
-            ))}
-          </ul>
-        </div>
+      <li className="group relative flex items-stretch">
+        <button
+          type="button"
+          aria-haspopup="true"
+          aria-current={active ? 'page' : undefined}
+          className={`inline-flex items-center whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground ${
+            active
+              ? 'border-card bg-brand-hover'
+              : 'border-transparent hover:bg-brand-hover'
+          }`}
+        >
+          {item.label}
+        </button>
+        <ul
+          aria-label={`${item.label} menu`}
+          className="invisible absolute left-0 top-full z-50 min-w-56 border border-outline-variant bg-card py-2 opacity-0 shadow-lg transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
+        >
+          {item.children.map((child) => {
+            if (!child.href) return null
+            const childActive = isActive(pathname, child)
+            return (
+              <li key={child.href}>
+                <Link
+                  href={child.href}
+                  aria-current={childActive ? 'page' : undefined}
+                  className={`block whitespace-nowrap px-4 py-2 font-bold text-foreground transition-colors ${
+                    childActive
+                      ? 'bg-brand-hover'
+                      : 'hover:bg-brand-hover'
+                  }`}
+                >
+                  {child.label}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
       </li>
     )
   }
