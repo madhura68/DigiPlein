@@ -106,6 +106,17 @@
   --border: #2d2e33;
 }
 
+/* De kit zet het drawer-paneel op --card (#fff, wit), terwijl de app-body op
+   --page (#eef0f5, lichtgrijs) staat — daardoor is alles in de copilot wit-op-wit
+   en valt de scheiding weg. Laat het paneel de app-achtergrond overnemen, zodat de
+   witte bg-background-elementen (doc-knoppen, kaarten, berichten, velden) eruit
+   springen zoals de contentkaarten in de app. Alleen bg-card-vlakken (paneel +
+   chat-root) worden grijs; bg-background/bg-input-background blijven wit (die
+   resolven op :root). Gescopet op de drawer-subtree. */
+[data-s4m-slot="drawer"] {
+  --card: var(--page);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
