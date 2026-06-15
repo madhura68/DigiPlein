@@ -15,7 +15,7 @@ import {
 import { staffInviteAuditSummary, writeAuditLog } from '@/lib/audit'
 import { prisma } from '@/lib/db'
 import { env } from '@/lib/env'
-import { sendStaffInviteMail } from '@/lib/mail/staff-invite'
+import { formatMailAddress, sendStaffInviteMail } from '@/lib/mail/staff-invite'
 
 export type MedewerkerActionState = {
   error?: string
@@ -51,6 +51,11 @@ function isUniqueViolation(error: unknown): boolean {
     'code' in error &&
     (error as { code?: string }).code === 'P2002'
   )
+}
+
+function staffInviteMailFrom(): string | undefined {
+  if (!env.MAIL_FROM) return undefined
+  return formatMailAddress(env.MAIL_FROM_NAME, env.MAIL_FROM)
 }
 
 export async function createStaff(
@@ -118,6 +123,8 @@ export async function createStaff(
         to: staff.email,
         staffName: staff.name,
         token,
+        from: staffInviteMailFrom(),
+        sendmailPath: env.MAIL_SENDMAIL_PATH,
       })
     } catch {
       revalidatePath('/medewerkers')
@@ -315,6 +322,8 @@ export async function resendStaffInvite(
       to: result.staff.email,
       staffName: result.staff.name,
       token,
+      from: staffInviteMailFrom(),
+      sendmailPath: env.MAIL_SENDMAIL_PATH,
     })
   } catch {
     return {
