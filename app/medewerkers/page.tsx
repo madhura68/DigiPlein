@@ -30,7 +30,7 @@ export default async function MedewerkersPage() {
       />
 
       {staff.length > 0 ? (
-        <AdminList headers={['Naam', 'Rol', 'Status', 'Acties']}>
+        <AdminList headers={['Naam', 'Rol', 'Status', 'Copilot', 'Acties']}>
           {staff.map((member) => (
             <TableRow
               key={member.id}
@@ -48,6 +48,17 @@ export default async function MedewerkersPage() {
                 />
               </TableCell>
               <TableCell>
+                {member.copilotRegisteredAt ? (
+                  <span title="Doorgegeven aan Scrum4Me; koppelen gebeurt in de productinstellingen.">
+                    <StatusChip label="Aangemeld" tone="info" />
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Niet aangemeld
+                  </span>
+                )}
+              </TableCell>
+              <TableCell>
                 <MedewerkerRijActies
                   staff={{
                     id: member.id,
@@ -55,6 +66,7 @@ export default async function MedewerkersPage() {
                     email: member.email,
                     role: member.role,
                     isActive: member.isActive,
+                    copilotRegistered: member.copilotRegisteredAt != null,
                   }}
                 />
               </TableCell>

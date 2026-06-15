@@ -12,7 +12,12 @@ import {
   hashStaffInviteToken,
   staffInviteExpiresAt,
 } from '@/lib/auth/staff-invites'
-import { staffInviteAuditSummary, writeAuditLog } from '@/lib/audit'
+import {
+  staffCopilotRegistrationAuditSummary,
+  staffInviteAuditSummary,
+  writeAuditLog,
+} from '@/lib/audit'
+import { preRegisterCopilotAppUser } from '@/lib/copilot-provision'
 import { prisma } from '@/lib/db'
 import { env } from '@/lib/env'
 import { formatMailAddress, sendStaffInviteMail } from '@/lib/mail/staff-invite'
@@ -56,6 +61,31 @@ function isUniqueViolation(error: unknown): boolean {
 function staffInviteMailFrom(): string | undefined {
   if (!env.MAIL_FROM) return undefined
   return formatMailAddress(env.MAIL_FROM_NAME, env.MAIL_FROM)
+}
+
+// Meld een medewerker als copilot-gebruiker aan bij de centrale service en leg lokaal
+// vast dat de push is gelukt. Schrijft (timestamp + audit) alleen bij een geslaagde
+// registratie. Retourneert of de registratie is doorgezet. De netwerk-call zelf gooit
+// nooit (zie copilot-provision); een DB-fout op de update propageert wél naar de caller.
+async function markCopilotRegistration(
+  staffId: string,
+  actorId: string
+): Promise<boolean> {
+  const { registered } = await preRegisterCopilotAppUser(staffId)
+  if (!registered) return false
+  await prisma.staffMember.update({
+    where: { id: staffId },
+    data: { copilotRegisteredAt: new Date() },
+  })
+  await writeAuditLog({
+    actorType: 'STAFF',
+    actorId,
+    action: 'COPILOT_REGISTERED',
+    entity: 'staff_member',
+    entityId: staffId,
+    summary: staffCopilotRegistrationAuditSummary(),
+  })
+  return registered
 }
 
 export async function createStaff(
@@ -115,6 +145,15 @@ export async function createStaff(
       entityId: staff.id,
       summary: staffInviteAuditSummary('created'),
     })
+
+    // Best-effort: meld de nieuwe medewerker meteen aan als copilot-gebruiker. Mag de
+    // aanmaak nooit blokkeren of laten falen — bij een storing registreert het lazy-pad
+    // (medewerker opent zelf de copilot) alsnog.
+    try {
+      await markCopilotRegistration(staff.id, session.staffId)
+    } catch {
+      // genegeerd
+    }
 
     try {
       await sendStaffInviteMail({
@@ -340,6 +379,42 @@ export async function resendStaffInvite(
     entityId: result.staff.id,
     summary: staffInviteAuditSummary('resent'),
   })
+
+  revalidatePath('/medewerkers')
+  return { ok: true }
+}
+
+// Handmatig de copilot-registratie (opnieuw) versturen voor een bestaande medewerker —
+// dekt medewerkers van vóór deze functie en stille mislukkingen bij het aanmaken.
+export async function sendCopilotRegistration(
+  _prev: MedewerkerActionState,
+  formData: FormData
+): Promise<MedewerkerActionState> {
+  const session = await requireAdmin()
+  const parsed = idSchema.safeParse({ id: formData.get('id') })
+  if (!parsed.success) return { error: 'Ongeldig verzoek.', status: 422 }
+
+  const staff = await prisma.staffMember.findUnique({
+    where: { id: parsed.data.id },
+    select: { id: true, isActive: true },
+  })
+  if (!staff) return { error: 'Medewerker niet gevonden.', status: 404 }
+  if (!staff.isActive) {
+    return { error: 'Deze medewerker is gedeactiveerd.', status: 422 }
+  }
+
+  let registered = false
+  try {
+    registered = await markCopilotRegistration(staff.id, session.staffId)
+  } catch {
+    registered = false
+  }
+  if (!registered) {
+    return {
+      error: 'Kon niet aanmelden bij de copilot. Probeer het later opnieuw.',
+      status: 502,
+    }
+  }
 
   revalidatePath('/medewerkers')
   return { ok: true }
