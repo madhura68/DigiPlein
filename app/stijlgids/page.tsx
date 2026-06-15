@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { StatusChip } from "@/components/ui/status-chip"
+import { requireStaff } from "@/lib/auth"
 
 const rolparen: { naam: string; klassen: string }[] = [
   { naam: "primary-container", klassen: "bg-primary-container text-primary-container-foreground" },
@@ -16,7 +17,9 @@ const rolparen: { naam: string; klassen: string }[] = [
   { naam: "accent-indigo", klassen: "bg-accent-indigo text-primary-foreground" },
 ]
 
-export default function StijlgidsPage() {
+export default async function StijlgidsPage() {
+  await requireStaff()
+
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-12">
       <header className="flex flex-col gap-3">

@@ -64,17 +64,36 @@ enum PairingStatus {
 }
 
 model StaffMember {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name          String
-  email         String         @unique
-  passwordHash  String         @map("password_hash")
-  role          StaffRole      @default(STAFF)
-  isActive      Boolean        @default(true) @map("is_active")
-  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime       @updatedAt @map("updated_at") @db.Timestamptz
-  loginPairings LoginPairing[]
+  id                  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  email               String         @unique
+  passwordHash        String         @map("password_hash")
+  role                StaffRole      @default(STAFF)
+  isActive            Boolean        @default(true) @map("is_active")
+  createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  loginPairings       LoginPairing[]
+  invites             StaffInvite[]  @relation("StaffInviteTarget")
+  createdStaffInvites StaffInvite[]  @relation("StaffInviteCreator")
 
   @@map("staff_members")
+}
+
+model StaffInvite {
+  id          String      @id @default(cuid())
+  tokenHash   String      @unique @map("token_hash")
+  staffId     String      @map("staff_id") @db.Uuid
+  createdById String      @map("created_by_id") @db.Uuid
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz
+  expiresAt   DateTime    @map("expires_at") @db.Timestamptz
+  usedAt      DateTime?   @map("used_at") @db.Timestamptz
+  revokedAt   DateTime?   @map("revoked_at") @db.Timestamptz
+  staff       StaffMember @relation("StaffInviteTarget", fields: [staffId], references: [id], onDelete: Cascade)
+  createdBy   StaffMember @relation("StaffInviteCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([staffId, expiresAt])
+  @@index([expiresAt])
+  @@map("staff_invites")
 }
 
 model Volunteer {

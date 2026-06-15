@@ -29,6 +29,7 @@ describe('lib/env', () => {
     if (result.success) {
       expect(result.data.APP_BASE_URL).toBe('http://localhost:3000')
       expect(result.data.NODE_ENV).toBe('development')
+      expect(result.data.MAIL_TRANSPORT).toBe('noop')
     }
   })
 })

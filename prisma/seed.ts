@@ -3,6 +3,8 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import bcrypt from 'bcryptjs'
 
+import { normalizeStaffEmail } from '../lib/auth/staff-email'
+
 dotenv.config({ path: '.env.local' })
 dotenv.config()
 
@@ -43,7 +45,7 @@ async function main() {
     },
   })
 
-  const adminEmail = 'beheerder@digiplein.demo'
+  const adminEmail = normalizeStaffEmail('beheerder@digiplein.demo')
   const adminPassword =
     process.env.SEED_ADMIN_PASSWORD ?? 'digiplein-demo-beheerder'
   if (!process.env.SEED_ADMIN_PASSWORD) {

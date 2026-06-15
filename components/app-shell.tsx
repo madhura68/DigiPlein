@@ -6,10 +6,66 @@ import { usePathname } from 'next/navigation'
 
 import { logout } from '@/app/logout/actions'
 import { MobileNavDrawer } from '@/components/mobile-nav-drawer'
-import { isActive, navItemsForRole } from '@/components/nav-items'
+import { isActive, navItemsForRole, type NavItem } from '@/components/nav-items'
 import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/lib/app-name'
 import { STAFF_ROLE_LABELS } from '@/lib/enums'
+
+function DesktopNavItem({
+  item,
+  pathname,
+}: {
+  item: NavItem
+  pathname: string
+}) {
+  const active = isActive(pathname, item)
+
+  if (item.children?.length) {
+    return (
+      <li className="flex items-stretch">
+        <div className="flex items-stretch">
+          <span
+            aria-current={active ? 'page' : undefined}
+            className={`inline-flex items-center whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground ${
+              active
+                ? 'border-card bg-brand-hover'
+                : 'border-transparent'
+            }`}
+          >
+            {item.label}
+          </span>
+          <ul className="flex items-stretch">
+            {item.children.map((child) => (
+              <DesktopNavItem
+                key={child.href ?? child.label}
+                item={child}
+                pathname={pathname}
+              />
+            ))}
+          </ul>
+        </div>
+      </li>
+    )
+  }
+
+  if (!item.href) return null
+
+  return (
+    <li>
+      <Link
+        href={item.href}
+        aria-current={active ? 'page' : undefined}
+        className={`inline-flex whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground transition-colors ${
+          active
+            ? 'border-card bg-brand-hover'
+            : 'border-transparent hover:bg-brand-hover'
+        }`}
+      >
+        {item.label}
+      </Link>
+    </li>
+  )
+}
 
 // Compacte werk-shell (HS-2): witte utility-header met woordmerk + account/uitloggen,
 // daaronder een volle oranje navigatiebalk. Hele shell print:hidden, zodat export-/
@@ -55,24 +111,13 @@ export function AppShell({ name, role }: { name: string; role: StaffRole }) {
 
       <nav aria-label="Hoofdnavigatie" className="hidden bg-brand lg:block">
         <ul className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-4">
-          {items.map((item) => {
-            const active = isActive(pathname, item.href)
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={active ? 'page' : undefined}
-                  className={`inline-flex whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground transition-colors ${
-                    active
-                      ? 'border-card bg-brand-hover'
-                      : 'border-transparent hover:bg-brand-hover'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              </li>
-            )
-          })}
+          {items.map((item) => (
+            <DesktopNavItem
+              key={item.href ?? item.label}
+              item={item}
+              pathname={pathname}
+            />
+          ))}
         </ul>
       </nav>
     </header>

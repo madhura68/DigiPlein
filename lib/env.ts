@@ -14,6 +14,7 @@ export const envSchema = z.object({
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),
+  MAIL_TRANSPORT: z.enum(['noop', 'smtp']).default('noop'),
   // M2 chat-window (F-07/§10): integratiepunt achter een feature-flag. Default uit
   // → "binnenkort"; aan ("true") + een geldige URL → het externe component wordt
   // ingebed (A3). Env-vars zijn strings, vandaar de transform/preprocess.

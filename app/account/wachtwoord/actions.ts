@@ -3,6 +3,7 @@
 import bcrypt from 'bcryptjs'
 
 import { requireStaff } from '@/lib/auth'
+import { staffPasswordSetAuditSummary, writeAuditLog } from '@/lib/audit'
 import { prisma } from '@/lib/db'
 
 export type ChangePasswordState = {
@@ -25,13 +26,17 @@ export async function changeOwnPassword(
   _prev: ChangePasswordState,
   formData: FormData
 ): Promise<ChangePasswordState> {
-  const session = await requireStaff()
+  const session = await requireStaff({ allowPasswordChange: true })
+  const isForcedChange = Boolean(session.mustChangePassword)
   const currentPassword = value(formData, 'currentPassword')
   const newPassword = value(formData, 'newPassword')
   const confirmPassword = value(formData, 'confirmPassword')
 
-  if (!currentPassword || !newPassword || !confirmPassword) {
+  if (!newPassword || !confirmPassword) {
     return { error: 'Vul alle wachtwoordvelden in.', status: 422 }
+  }
+  if (!isForcedChange && !currentPassword) {
+    return { error: 'Vul je huidig wachtwoord in.', status: 422 }
   }
   if (newPassword.length < 8) {
     return {
@@ -52,14 +57,29 @@ export async function changeOwnPassword(
   })
   if (!staff || !staff.isActive) return neutralError
 
-  const valid = await bcrypt.compare(currentPassword, staff.passwordHash)
-  if (!valid) return neutralError
+  if (!isForcedChange) {
+    const valid = await bcrypt.compare(currentPassword, staff.passwordHash)
+    if (!valid) return neutralError
+  }
 
   const passwordHash = await bcrypt.hash(newPassword, 10)
   await prisma.staffMember.update({
     where: { id: session.staffId },
     data: { passwordHash },
   })
+
+  if (isForcedChange) {
+    await writeAuditLog({
+      actorType: 'STAFF',
+      actorId: session.staffId,
+      action: 'PASSWORD_SET',
+      entity: 'staff_member',
+      entityId: session.staffId,
+      summary: staffPasswordSetAuditSummary(),
+    })
+    delete session.mustChangePassword
+    await session.save()
+  }
 
   return { ok: true }
 }

@@ -12,6 +12,8 @@ import {
   clientCreatedSummary,
   clientUpdatedSummary,
   logChatChange,
+  staffInviteAuditSummary,
+  staffPasswordSetAuditSummary,
 } from '@/lib/audit'
 
 beforeEach(() => {
@@ -97,6 +99,34 @@ describe('clientUpdatedSummary — persoonsgegevens-arm', () => {
 describe('clientCreatedSummary', () => {
   it('is een vaste, persoonsgegevens-vrije tekst', () => {
     expect(clientCreatedSummary()).toBe('Cliënt aangemaakt')
+  })
+})
+
+describe('staffInviteAuditSummary', () => {
+  it('maakt vaste persoonsgegevens-arme teksten voor uitnodigingen', () => {
+    const summary = staffInviteAuditSummary('created')
+    expect(summary).toBe('Medewerkeruitnodiging aangemaakt')
+    expect(summary).not.toMatch(/@|uitnodiging\/|token/i)
+  })
+
+  it('ondersteunt resend, accept en revoke zonder token of e-mail in de tekst', () => {
+    for (const [event, expected] of [
+      ['resent', 'Medewerkeruitnodiging opnieuw verstuurd'],
+      ['accepted', 'Medewerkeruitnodiging geaccepteerd'],
+      ['revoked', 'Medewerkeruitnodiging ingetrokken'],
+    ] as const) {
+      const summary = staffInviteAuditSummary(event)
+      expect(summary).toBe(expected)
+      expect(summary).not.toMatch(/@|uitnodiging\/|token/i)
+    }
+  })
+})
+
+describe('staffPasswordSetAuditSummary', () => {
+  it('is een vaste persoonsgegevens-arme tekst', () => {
+    const summary = staffPasswordSetAuditSummary()
+    expect(summary).toBe('Medewerker heeft wachtwoord ingesteld')
+    expect(summary).not.toMatch(/@|uitnodiging\/|token|Sandra/i)
   })
 })
 

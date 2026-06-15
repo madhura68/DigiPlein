@@ -19,7 +19,7 @@ export default async function NieuweMedewerkerPage() {
         </Link>
         <PageHeader
           title="Nieuwe medewerker"
-          description="Voeg een medewerker toe en wijs een rol toe."
+          description="Registreer de medewerker en verstuur een uitnodiging om in te loggen."
         />
       </div>
       <NieuweMedewerkerForm />

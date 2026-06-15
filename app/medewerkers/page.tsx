@@ -21,7 +21,7 @@ export default async function MedewerkersPage() {
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
       <PageHeader
         title="Medewerkers"
-        description="Beheer wie toegang heeft tot DigiPlein. Je kunt medewerkers toevoegen, deactiveren en hun wachtwoord opnieuw instellen."
+        description="Beheer wie toegang heeft tot DigiPlein. Je kunt medewerkers uitnodigen, rollen aanpassen en toegang deactiveren."
         action={
           <Link href="/medewerkers/nieuw" className={buttonVariants()}>
             Nieuwe medewerker
