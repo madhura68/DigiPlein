@@ -5,6 +5,7 @@ import {
   hashToken,
 } from '@/lib/auth/pairing'
 import { setPairCookie } from '@/lib/auth/pair-cookie'
+import { env } from '@/lib/env'
 import { checkRateLimit } from '@/lib/rate-limit'
 import { getTrustedClientIp } from '@/lib/request-ip'
 
@@ -41,8 +42,10 @@ export async function POST(request: Request) {
 
   await setPairCookie(desktopToken)
 
-  const origin = new URL(request.url).origin
-  const qrUrl = `${origin}/m/pair#id=${pairing.id}&s=${mobileSecret}`
+  // De QR wordt op een ander apparaat (telefoon) gescand: gebruik de publieke,
+  // geconfigureerde APP_BASE_URL — niet de request-origin, die achter de reverse
+  // proxy de interne bind-host (0.0.0.0:3000) is en dus onbereikbaar.
+  const qrUrl = `${env.APP_BASE_URL}/m/pair#id=${pairing.id}&s=${mobileSecret}`
 
   return Response.json({
     pairingId: pairing.id,
