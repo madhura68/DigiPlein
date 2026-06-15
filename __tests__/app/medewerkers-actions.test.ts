@@ -58,6 +58,7 @@ import {
   createStaff,
   deactivateStaff,
   resendStaffInvite,
+  sendCopilotRegistration,
   updateStaff,
 } from '@/app/medewerkers/actions'
 
@@ -334,5 +335,65 @@ describe('medewerkers-actions — laatste-admin-bescherming', () => {
     )
     expect(res.ok).toBe(true)
     expect(staffMember.update).toHaveBeenCalledOnce()
+  })
+})
+
+describe('medewerkers-actions — sendCopilotRegistration', () => {
+  it('STAFF die de actie aanroept → 403 (requireAdmin gooit)', async () => {
+    requireAdmin.mockRejectedValue(
+      Object.assign(new Error('forbidden'), { status: 403 })
+    )
+    await expect(
+      sendCopilotRegistration({}, formData({ id: 'staff-1' }))
+    ).rejects.toMatchObject({ status: 403 })
+    expect(mocks.preRegisterCopilotAppUser).not.toHaveBeenCalled()
+  })
+
+  it('onbekende medewerker → 404 zonder registratie', async () => {
+    staffMember.findUnique.mockResolvedValue(null)
+    const res = await sendCopilotRegistration({}, formData({ id: 'weg' }))
+    expect(res.status).toBe(404)
+    expect(mocks.preRegisterCopilotAppUser).not.toHaveBeenCalled()
+  })
+
+  it('gedeactiveerde medewerker → 422 zonder registratie', async () => {
+    staffMember.findUnique.mockResolvedValue({ id: 'staff-1', isActive: false })
+    const res = await sendCopilotRegistration({}, formData({ id: 'staff-1' }))
+    expect(res.status).toBe(422)
+    expect(mocks.preRegisterCopilotAppUser).not.toHaveBeenCalled()
+  })
+
+  it('succes → timestamp, audit, revalidate en ok', async () => {
+    staffMember.findUnique.mockResolvedValue({ id: 'staff-1', isActive: true })
+    staffMember.update.mockResolvedValue({ id: 'staff-1' })
+    mocks.preRegisterCopilotAppUser.mockResolvedValue({ registered: true })
+
+    const res = await sendCopilotRegistration({}, formData({ id: 'staff-1' }))
+
+    expect(res.ok).toBe(true)
+    expect(mocks.preRegisterCopilotAppUser).toHaveBeenCalledWith('staff-1')
+    expect(staffMember.update).toHaveBeenCalledWith({
+      where: { id: 'staff-1' },
+      data: { copilotRegisteredAt: expect.any(Date) },
+    })
+    expect(mocks.writeAuditLog).toHaveBeenCalledWith({
+      actorType: 'STAFF',
+      actorId: 'admin-1',
+      action: 'COPILOT_REGISTERED',
+      entity: 'staff_member',
+      entityId: 'staff-1',
+      summary: 'summary:copilot',
+    })
+    expect(mocks.revalidatePath).toHaveBeenCalledWith('/medewerkers')
+  })
+
+  it('mislukte registratie → 502 zonder timestamp', async () => {
+    staffMember.findUnique.mockResolvedValue({ id: 'staff-1', isActive: true })
+    mocks.preRegisterCopilotAppUser.mockResolvedValue({ registered: false })
+
+    const res = await sendCopilotRegistration({}, formData({ id: 'staff-1' }))
+
+    expect(res.status).toBe(502)
+    expect(staffMember.update).not.toHaveBeenCalled()
   })
 })

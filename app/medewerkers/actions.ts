@@ -383,3 +383,39 @@ export async function resendStaffInvite(
   revalidatePath('/medewerkers')
   return { ok: true }
 }
+
+// Handmatig de copilot-registratie (opnieuw) versturen voor een bestaande medewerker —
+// dekt medewerkers van vóór deze functie en stille mislukkingen bij het aanmaken.
+export async function sendCopilotRegistration(
+  _prev: MedewerkerActionState,
+  formData: FormData
+): Promise<MedewerkerActionState> {
+  const session = await requireAdmin()
+  const parsed = idSchema.safeParse({ id: formData.get('id') })
+  if (!parsed.success) return { error: 'Ongeldig verzoek.', status: 422 }
+
+  const staff = await prisma.staffMember.findUnique({
+    where: { id: parsed.data.id },
+    select: { id: true, isActive: true },
+  })
+  if (!staff) return { error: 'Medewerker niet gevonden.', status: 404 }
+  if (!staff.isActive) {
+    return { error: 'Deze medewerker is gedeactiveerd.', status: 422 }
+  }
+
+  let registered = false
+  try {
+    registered = await markCopilotRegistration(staff.id, session.staffId)
+  } catch {
+    registered = false
+  }
+  if (!registered) {
+    return {
+      error: 'Kon niet aanmelden bij de copilot. Probeer het later opnieuw.',
+      status: 502,
+    }
+  }
+
+  revalidatePath('/medewerkers')
+  return { ok: true }
+}
