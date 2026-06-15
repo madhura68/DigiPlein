@@ -22,17 +22,32 @@ function MobileNavItem({
   const active = isActive(pathname, item)
 
   if (item.children?.length) {
+    const parentClassName = `flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+      active ? 'bg-brand-hover' : 'hover:bg-surface-hover'
+    }`
+
     return (
       <li>
         <div className="flex flex-col gap-1">
-          <span
-            aria-current={active ? 'page' : undefined}
-            className={`flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground ${
-              active ? 'bg-brand-hover' : 'bg-surface'
-            }`}
-          >
-            {item.label}
-          </span>
+          {item.href ? (
+            <Link
+              href={item.href}
+              aria-current={active ? 'page' : undefined}
+              onClick={onNavigate}
+              className={parentClassName}
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <span
+              aria-current={active ? 'page' : undefined}
+              className={`flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground ${
+                active ? 'bg-brand-hover' : 'bg-surface'
+              }`}
+            >
+              {item.label}
+            </span>
+          )}
           <ul className="flex flex-col gap-1 pl-4">
             {item.children.map((child) => (
               <MobileNavItem
