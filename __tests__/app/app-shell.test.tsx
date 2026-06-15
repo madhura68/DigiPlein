@@ -53,6 +53,27 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     ).toBeInTheDocument()
   })
 
+  it('rendert Beheer in de desktopnavigatie als dropdown met beheerlinks', () => {
+    render(<AppShell name="Sandra" role="ADMIN" />)
+
+    const desktopNav = screen.getByRole('navigation', { name: 'Hoofdnavigatie' })
+    const beheerTrigger = within(desktopNav).getByRole('button', {
+      name: 'Beheer',
+    })
+    expect(beheerTrigger).toHaveAttribute('aria-haspopup', 'true')
+    expect(beheerTrigger).not.toHaveAttribute('aria-current')
+
+    const beheerMenu = within(desktopNav).getByRole('list', {
+      name: 'Beheer menu',
+    })
+    expect(
+      within(beheerMenu).getByRole('link', { name: 'Gebruikersbeheer' })
+    ).toHaveAttribute('href', '/medewerkers')
+    expect(
+      within(beheerMenu).getByRole('link', { name: 'Audit-log' })
+    ).toHaveAttribute('href', '/audit')
+  })
+
   it('houdt de uitlogknop op minimaal 44px klikhoogte', () => {
     render(<AppShell name="Sandra" role="ADMIN" />)
     expect(screen.getByRole('button', { name: 'Uitloggen' })).toHaveClass('h-11')
