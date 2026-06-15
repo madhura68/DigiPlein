@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => {
     requireAdmin: vi.fn(),
     revalidatePath: vi.fn(),
     sendStaffInviteMail: vi.fn(),
+    preRegisterCopilotAppUser: vi.fn(),
     staffInvite,
     staffMember,
     staffInviteExpiresAt: vi.fn(),
@@ -41,7 +42,11 @@ vi.mock('@/lib/auth/staff-invites', () => ({
 }))
 vi.mock('@/lib/audit', () => ({
   staffInviteAuditSummary: (event: string) => `summary:${event}`,
+  staffCopilotRegistrationAuditSummary: () => 'summary:copilot',
   writeAuditLog: mocks.writeAuditLog,
+}))
+vi.mock('@/lib/copilot-provision', () => ({
+  preRegisterCopilotAppUser: mocks.preRegisterCopilotAppUser,
 }))
 vi.mock('next/cache', () => ({ revalidatePath: mocks.revalidatePath }))
 vi.mock('@/lib/db', () => ({ prisma: mocks.prisma }))
@@ -75,6 +80,8 @@ beforeEach(() => {
   mocks.hashStaffInviteToken.mockImplementation((token: string) => `hash:${token}`)
   mocks.sendStaffInviteMail.mockReset()
   mocks.sendStaffInviteMail.mockResolvedValue({ transport: 'noop', skipped: true })
+  mocks.preRegisterCopilotAppUser.mockReset()
+  mocks.preRegisterCopilotAppUser.mockResolvedValue({ registered: false })
   mocks.staffInviteExpiresAt.mockReset()
   mocks.staffInviteExpiresAt.mockReturnValue(new Date('2026-06-18T10:00:00.000Z'))
   mocks.writeAuditLog.mockReset()
@@ -232,6 +239,60 @@ describe('medewerkers-actions — createStaff', () => {
       entityId: 'staff-1',
       summary: 'summary:resent',
     })
+  })
+
+  it('meldt de nieuwe medewerker aan als copilot-gebruiker bij registered', async () => {
+    staffMember.create.mockResolvedValue({
+      id: 'staff-1',
+      name: 'A',
+      email: 'a@b.nl',
+      role: 'STAFF',
+    })
+    staffInvite.create.mockResolvedValue({ id: 'invite-1' })
+    staffMember.update.mockResolvedValue({ id: 'staff-1' })
+    mocks.preRegisterCopilotAppUser.mockResolvedValue({ registered: true })
+
+    const res = await createStaff(
+      {},
+      formData({ name: 'A', email: 'a@b.nl', role: 'STAFF' })
+    )
+
+    expect(res.ok).toBe(true)
+    expect(mocks.preRegisterCopilotAppUser).toHaveBeenCalledWith('staff-1')
+    expect(staffMember.update).toHaveBeenCalledWith({
+      where: { id: 'staff-1' },
+      data: { copilotRegisteredAt: expect.any(Date) },
+    })
+    expect(mocks.writeAuditLog).toHaveBeenCalledWith({
+      actorType: 'STAFF',
+      actorId: 'admin-1',
+      action: 'COPILOT_REGISTERED',
+      entity: 'staff_member',
+      entityId: 'staff-1',
+      summary: 'summary:copilot',
+    })
+  })
+
+  it('blijft ok en zet geen timestamp als de copilot-registratie faalt', async () => {
+    staffMember.create.mockResolvedValue({
+      id: 'staff-1',
+      name: 'A',
+      email: 'a@b.nl',
+      role: 'STAFF',
+    })
+    staffInvite.create.mockResolvedValue({ id: 'invite-1' })
+    mocks.preRegisterCopilotAppUser.mockRejectedValue(new Error('service down'))
+
+    const res = await createStaff(
+      {},
+      formData({ name: 'A', email: 'a@b.nl', role: 'STAFF' })
+    )
+
+    expect(res.ok).toBe(true)
+    expect(staffMember.update).not.toHaveBeenCalled()
+    expect(mocks.writeAuditLog).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'COPILOT_REGISTERED' })
+    )
   })
 })
 
