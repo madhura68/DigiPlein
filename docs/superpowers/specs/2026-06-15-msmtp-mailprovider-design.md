@@ -6,7 +6,7 @@ DigiPlein kan medewerkeruitnodigingen echt per e-mail versturen zonder eigen SMT
 
 ## Gekozen Aanpak
 
-`MAIL_TRANSPORT=smtp` betekent in DigiPlein: roep een sendmail-compatible binary aan met een volledige RFC822-mail op stdin. Standaard is dat `/usr/sbin/sendmail -t -oi`. Op de server is `/usr/sbin/sendmail` een msmtp-shim, waardoor relay/TLS/providerconfig buiten de app in `/etc/msmtprc` of `~/.msmtprc` blijft.
+`MAIL_TRANSPORT=smtp` betekent in DigiPlein: roep een sendmail-compatible binary aan met een volledige RFC822-mail op stdin. Standaard is dat `/usr/sbin/sendmail -t -oi`. De productie-image installeert `msmtp` en zet `/usr/sbin/sendmail` als symlink naar `/usr/bin/msmtp`, waardoor relay/TLS/providerconfig buiten de app in `/etc/msmtprc` blijft.
 
 `MAIL_TRANSPORT=noop` blijft de veilige default voor development/test en verstuurt niets extern.
 
@@ -20,6 +20,14 @@ DigiPlein kan medewerkeruitnodigingen echt per e-mail versturen zonder eigen SMT
 
 De app configureert geen SMTP-host, gebruikersnaam of wachtwoord. Die horen in msmtp.
 
+De container moet een read-only msmtp-config krijgen, bijvoorbeeld:
+
+```text
+/srv/scrum4me/secrets/digiplein-msmtprc:/etc/msmtprc:ro
+```
+
+De msmtp-config moet permissies hebben die msmtp accepteert voor de runtime-user, of met `passwordeval` werken.
+
 ## Mailinhoud
 
 De uitnodigingsmail is plain text:
@@ -29,7 +37,7 @@ De uitnodigingsmail is plain text:
 - `Subject`: `Uitnodiging voor DigiPlein`.
 - Body bevat een korte Nederlandse instructie, de uitnodigingslink en de geldigheid.
 
-Headers worden veilig opgebouwd zodat newline-injectie in naam, afzender of ontvanger wordt geweigerd.
+Headers worden veilig opgebouwd zodat newline-injectie in naam, afzender of ontvanger wordt geweigerd. Display-names met RFC 5322-specials worden gequote.
 
 ## Logging en Privacy
 
@@ -50,6 +58,7 @@ Als sendmail/msmtp met non-zero exit code eindigt of niet gestart kan worden, re
 ## Acceptatiecriteria
 
 - `MAIL_TRANSPORT=smtp` roept sendmail aan met `-t -oi`.
+- De runtime-image bevat `msmtp` en `/usr/sbin/sendmail` wijst naar `/usr/bin/msmtp`.
 - Een succesvolle sendmail-exit resulteert in `{ transport: 'smtp', skipped: false }`.
 - Een non-zero exit resulteert in een exception naar de bestaande action-catch.
 - `MAIL_FROM` is verplicht zodra `MAIL_TRANSPORT=smtp`.

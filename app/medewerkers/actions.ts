@@ -15,7 +15,7 @@ import {
 import { staffInviteAuditSummary, writeAuditLog } from '@/lib/audit'
 import { prisma } from '@/lib/db'
 import { env } from '@/lib/env'
-import { sendStaffInviteMail } from '@/lib/mail/staff-invite'
+import { formatMailAddress, sendStaffInviteMail } from '@/lib/mail/staff-invite'
 
 export type MedewerkerActionState = {
   error?: string
@@ -55,7 +55,7 @@ function isUniqueViolation(error: unknown): boolean {
 
 function staffInviteMailFrom(): string | undefined {
   if (!env.MAIL_FROM) return undefined
-  return `${env.MAIL_FROM_NAME} <${env.MAIL_FROM}>`
+  return formatMailAddress(env.MAIL_FROM_NAME, env.MAIL_FROM)
 }
 
 export async function createStaff(

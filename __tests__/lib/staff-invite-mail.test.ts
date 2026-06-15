@@ -1,12 +1,31 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { buildStaffInviteUrl, sendStaffInviteMail } from '@/lib/mail/staff-invite'
+import {
+  buildStaffInviteUrl,
+  formatMailAddress,
+  sendStaffInviteMail,
+} from '@/lib/mail/staff-invite'
 
 describe('staff invite mail', () => {
   it('builds invite links under the configured app base url', () => {
     expect(buildStaffInviteUrl('http://localhost:3000', 'abc_DEF-123')).toBe(
       'http://localhost:3000/uitnodiging/abc_DEF-123'
     )
+  })
+
+  it('formats display names safely for mail headers', () => {
+    expect(formatMailAddress('DigiPlein', 'noreply@example.nl')).toBe(
+      'DigiPlein <noreply@example.nl>'
+    )
+    expect(formatMailAddress('DigiPlein, Team', 'noreply@example.nl')).toBe(
+      '"DigiPlein, Team" <noreply@example.nl>'
+    )
+    expect(formatMailAddress('Digi "Plein"', 'noreply@example.nl')).toBe(
+      '"Digi \\"Plein\\"" <noreply@example.nl>'
+    )
+    expect(() =>
+      formatMailAddress('DigiPlein\nBcc: x@example.nl', 'noreply@example.nl')
+    ).toThrow('Ongeldige mailheader')
   })
 
   it('noop transport returns delivery metadata without logging the token or link', async () => {

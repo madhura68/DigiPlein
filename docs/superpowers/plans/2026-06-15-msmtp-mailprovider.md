@@ -15,6 +15,7 @@
 - Modify: `lib/env.ts` and `__tests__/lib/env.test.ts` for mail env validation.
 - Modify: `lib/mail/staff-invite.ts` and `__tests__/lib/staff-invite-mail.test.ts` for sendmail transport.
 - Modify: `.env.example` for deployment configuration.
+- Modify: `Dockerfile` to install msmtp in the runtime image and map `/usr/sbin/sendmail` to `/usr/bin/msmtp`.
 
 ## Tasks
 
@@ -22,7 +23,9 @@
 - [x] Implement `MAIL_FROM`, `MAIL_FROM_NAME`, and `MAIL_SENDMAIL_PATH` in `envSchema`.
 - [x] Add failing mail tests for smtp success, smtp failure, header injection rejection, and sanitized logging.
 - [x] Implement sendmail transport with injectable runner for tests.
+- [x] Harden sendmail transport after review: quote display-names and handle stdin stream errors.
 - [x] Update `.env.example` with msmtp/sendmail settings.
+- [x] Install msmtp in the Docker runtime image and replace busybox sendmail with the msmtp shim.
 - [x] Run targeted tests.
 - [x] Run `npm run verify`.
 - [x] Run `npm run build`.

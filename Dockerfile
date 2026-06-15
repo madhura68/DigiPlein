@@ -26,7 +26,8 @@ RUN npx prisma generate && npm run build
 # --- runner: minimale runtime ---
 FROM node:22-alpine AS runner
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat msmtp \
+  && ln -sf /usr/bin/msmtp /usr/sbin/sendmail
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000

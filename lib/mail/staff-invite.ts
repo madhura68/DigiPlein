@@ -42,6 +42,18 @@ function assertHeaderValue(value: string): void {
   }
 }
 
+export function formatMailAddress(displayName: string, address: string): string {
+  assertHeaderValue(displayName)
+  assertHeaderValue(address)
+
+  if (/^[A-Za-z0-9 !#$%&'*+/=?^_`{|}~-]+$/.test(displayName)) {
+    return `${displayName} <${address}>`
+  }
+
+  const escapedName = displayName.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+  return `"${escapedName}" <${address}>`
+}
+
 function buildStaffInviteMessage(input: Required<StaffInviteMailInput>): string {
   assertHeaderValue(input.from)
   assertHeaderValue(input.to)
@@ -82,6 +94,7 @@ function runSendmail(input: SendmailRunInput): Promise<SendmailRunResult> {
     const stderr: Buffer[] = []
 
     child.stderr.on('data', (chunk: Buffer) => stderr.push(chunk))
+    child.stdin.on('error', reject)
     child.on('error', reject)
     child.on('close', (code) => {
       resolve({ code, stderr: Buffer.concat(stderr).toString('utf8') })
