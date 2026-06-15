@@ -34,6 +34,7 @@ export function QrLoginButton() {
   const router = useRouter()
   const sourceRef = useRef<EventSource | null>(null)
   const claimInFlightRef = useRef(false)
+  const pairingIdRef = useRef<string | null>(null)
   const [state, setState] = useState<ViewState>('idle')
   const [pairing, setPairing] = useState<PairingStartResponse | null>(null)
   const [remainingMs, setRemainingMs] = useState(0)
@@ -55,7 +56,11 @@ export function QrLoginButton() {
     closeStream()
     setState('claiming')
 
-    const response = await fetch('/api/auth/pair/claim', { method: 'POST' })
+    const response = await fetch('/api/auth/pair/claim', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pairingId: pairingIdRef.current }),
+    })
     if (!response.ok) {
       claimInFlightRef.current = false
       setPairing(null)
@@ -127,6 +132,7 @@ export function QrLoginButton() {
       if (!response.ok) throw new Error('pair_start_failed')
 
       const data = (await response.json()) as PairingStartResponse
+      pairingIdRef.current = data.pairingId
       setPairing(data)
       setRemainingMs(
         Math.max(0, new Date(data.expiresAt).getTime() - Date.now())
