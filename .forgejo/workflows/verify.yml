@@ -10,6 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true # vendor/scrum4me-copilot (kit) is een submodule → anders falen de @s4m-kit-imports
+          # vendor/scrum4me-copilot is een PRIVATE repo. De auto-token van Forgejo Actions is
+          # repo-scoped tot DigiPlein en kan die submodule niet authenticeren → de checkout-stap
+          # faalt binnen enkele seconden (vóór npm ci) en élke run sinds de submodule-integratie
+          # is rood. Geef daarom een PAT met read-toegang tot scrum4me-copilot mee; checkout
+          # gebruikt 'm voor zowel de hoofd-repo als de same-host submodule-fetch.
+          # Vereist secret: repo → Settings → Actions → Secrets → SUBMODULE_TOKEN.
+          token: ${{ secrets.SUBMODULE_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: 20

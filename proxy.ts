@@ -13,7 +13,7 @@ export function proxy(request: NextRequest) {
   )
   const isLoginRoute = pathname === '/login'
   // API-routes regelen hun eigen auth (JSON 401) i.p.v. een HTML-redirect naar
-  // /login — nodig o.a. voor het chat-identiteitsendpoint (contract §10.1).
+  // /login — o.a. de scrum4me-copilot-route (/api/s4m) dwingt z'n eigen sessie-check af.
   const isApiRoute = pathname.startsWith('/api/')
   const isInviteRoute = pathname.startsWith('/uitnodiging/')
 

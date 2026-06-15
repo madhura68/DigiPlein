@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 
 import { logout } from '@/app/logout/actions'
 import { MobileNavDrawer } from '@/components/mobile-nav-drawer'
+import { S4MCopilotDrawer } from '@s4m-kit/index'
 import { isActive, navItemsForRole, type NavItem } from '@/components/nav-items'
 import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/lib/app-name'
@@ -99,6 +100,9 @@ export function AppShell({ name, role }: { name: string; role: StaffRole }) {
                 </Button>
               </form>
             </div>
+            {/* Scrum4Me-copilot: app-breed, achter login. Toegang volgt uit Scrum4Me-membership
+                (ongekoppelde staf ziet de not_linked-melding); jobs staan hard-off via de binding. */}
+            <S4MCopilotDrawer basePath="/api/s4m" />
             <MobileNavDrawer
               items={items}
               name={name}

@@ -117,6 +117,8 @@ describe('QrLoginButton', () => {
     await waitFor(() => {
       expect(fetch).toHaveBeenLastCalledWith('/api/auth/pair/claim', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pairingId: 'pair-1' }),
       })
     })
     expect(FakeEventSource.instances[0].close).toHaveBeenCalledOnce()

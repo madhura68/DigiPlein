@@ -1,4 +1,3 @@
-import { ChatWindow } from '@/components/chat/chat-window'
 import { PageHeader } from '@/components/page-header'
 import { requireStaff } from '@/lib/auth'
 
@@ -11,8 +10,8 @@ export default async function Home() {
         title={`Welkom terug, ${session.name}.`}
         description="Kies hierboven een onderdeel om mee aan de slag te gaan."
       />
+      {/* De copilot (chat·docs·ideas·jobs) zit app-breed in de header-drawer (AppShell). */}
       <div className="grid gap-4 sm:grid-cols-2">
-        <ChatWindow authenticated />
         {/* Ruimte voor het M3/M4 "vandaag"-overzicht (wie er komt + bezetting) — YAGNI. */}
         <div className="rounded-card rounded-br-[2rem] border border-dashed border-outline-variant bg-card p-6">
           <p className="font-bold">Vandaag</p>

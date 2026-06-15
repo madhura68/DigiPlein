@@ -118,7 +118,7 @@ Wijzigingsgeschiedenis voor verantwoording (AVG) en voor vertrouwen in het chat-
 
 **Persona:** Sandra (gebruiker), JP (kaders) · **Prioriteit:** MVP
 
-Het chat-window (apart in ontwikkeling) wordt ingebed voor ingelogde medewerkers; integratiecontract en guardrails in §10.
+Het chat-window is het **Scrum4Me-Copilot**-component, ingebed voor ingelogde medewerkers; AVG-handhaving loopt via de Copilot content-policy-gate (§6.5). Integratiecontract en guardrails in §10.
 
 **Acceptatiecriteria**
 - [ ] Ingelogde medewerkers zien het chat-window; niet-ingelogden nooit
@@ -378,7 +378,7 @@ Een server-gerenderde Next.js-app (App Router) met PostgreSQL via Prisma, sessie
 
 ## 10. Chat-window: integratiecontract & guardrails
 
-Het chat-window is een extern component (in ontwikkeling; open vraag product-spec §10.7). Deze spec definieert wat het *moet kunnen aantonen* om in deze app te mogen draaien — onafhankelijk van de implementatie:
+Het chat-window is het **Scrum4Me-Copilot**-component (ingebed achter een feature-flag). Deze spec definieert wat het *moet kunnen aantonen* om in deze app te mogen draaien — onafhankelijk van de implementatie. De AVG-guardrails hieronder (ST-202) worden vervuld door het Copilot-platform: een **preventieve content-policy-gate** (per-product `content_policy`, gecureerd geseed vanuit `lib/avg.ts`, fail-closed) plus de **correctieve job-flow-approval** (RW/PO bevestigt plan/PR/deploy) — niet door bespoke check/confirm-endpoints in deze app.
 
 **Contract**
 
@@ -391,7 +391,7 @@ Het chat-window is een extern component (in ontwikkeling; open vraag product-spe
 
 - Weiger velden/feature-verzoeken in strijd met het veldenmodel: BSN, geboortedatum, adres, pasnummer, gezondheids-/afkomst-/religiegegevens, niveau-labels, cliënt-login, export van cliëntdata naar externe diensten.
 - Elk nieuw persoonsgegevens-veld vereist: doelomschrijving + bewaartermijn in het verzoek, en wordt gemarkeerd "FG-toets vereist" in het audit-log.
-- De guardrail-lijst staat in code/config van de app (niet alleen in de agent-prompt), zodat ook een nieuwe agent-versie eraan gebonden is.
+- De guardrail-lijst is de bron `lib/avg.ts` (niet alleen een agent-prompt), gecureerd geseed in de Scrum4Me-DB als het product-`content_policy`; ook een nieuwe agent-versie is eraan gebonden, want de Copilot-gate dwingt 'm server-side fail-closed af op de schrijfpaden.
 
 ## 11. Implementatie-backlog
 
@@ -417,7 +417,7 @@ Het chat-window is een extern component (in ontwikkeling; open vraag product-spe
 ### M2 — Chat-window
 
 - [ ] **ST-201 Inbedding** (F-07) — component achter login, sessie-doorgifte, alleen-STAFF zichtbaar. *Klaar wanneer:* medewerker kan chatten, uitgelogd niemand.
-- [ ] **ST-202 Guardrails & bevestigingsflow** — capability-trappen, ADMIN-bevestiging, AVG-weigerlijst in app-config. *Klaar wanneer:* verboden-veld-verzoek wordt aantoonbaar geweigerd; schema-verzoek wacht op ADMIN.
+- [ ] **ST-202 Guardrails & bevestigingsflow** — vervuld door het Copilot-platform: de preventieve content-policy-gate (gecureerde `content_policy` uit `lib/avg.ts`, geseed in de Scrum4Me-DB) + de correctieve job-flow-approval (RW/PO bevestigt plan/PR/deploy). *Klaar wanneer:* een verboden-veld-verzoek via de Copilot wordt aantoonbaar geweigerd; een schema-/gedragwijziging wacht op beheerder-bevestiging.
 - [ ] **ST-203 Audit-koppeling** — chat-wijzigingen in `audit_logs` incl. verzoek-referentie. *Klaar wanneer:* uitgevoerde chat-wijziging traceerbaar in log.
 
 > **MVP eindigt hier.** Definition of done: zie §12. M3–M5 zijn de directe vervolgfases richting product-spec v1.
