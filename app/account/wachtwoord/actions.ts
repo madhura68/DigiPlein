@@ -80,6 +80,9 @@ export async function changeOwnPassword(
     })
     delete session.mustChangePassword
     await session.save()
+    // Eerste-wachtwoordflow (na invite-accept): stuur de nieuwe medewerker
+    // de app in i.p.v. achter te laten op de wachtwoordpagina. De gewone
+    // flow (ingelogd zelf wijzigen) houdt de bevestigingsmelding hieronder.
     redirect('/')
   }
 

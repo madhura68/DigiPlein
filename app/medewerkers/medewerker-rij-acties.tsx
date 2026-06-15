@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import {
   deactivateStaff,
   resendStaffInvite,
+  sendCopilotRegistration,
   updateStaff,
   type MedewerkerActionState,
 } from './actions'
@@ -18,6 +19,7 @@ type StaffRow = {
   email: string
   role: 'ADMIN' | 'STAFF'
   isActive: boolean
+  copilotRegistered: boolean
 }
 
 export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
@@ -33,8 +35,16 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
     updateStaff,
     initialState
   )
+  const [copilotState, copilotAction, copilotSending] = useActionState(
+    sendCopilotRegistration,
+    initialState
+  )
 
-  const error = deactivateState.error ?? roleState.error ?? inviteState.error
+  const error =
+    deactivateState.error ??
+    roleState.error ??
+    inviteState.error ??
+    copilotState.error
   const nextRole = staff.role === 'ADMIN' ? 'STAFF' : 'ADMIN'
 
   return (
@@ -74,6 +84,19 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
           Nieuwe uitnodiging sturen
         </Button>
       </form>
+      {staff.isActive && !staff.copilotRegistered ? (
+        <form action={copilotAction}>
+          <input type="hidden" name="id" value={staff.id} />
+          <Button
+            type="submit"
+            variant="secondary"
+            size="sm"
+            disabled={copilotSending}
+          >
+            Stuur copilot-registratie
+          </Button>
+        </form>
+      ) : null}
       {error ? (
         <p role="alert" className="text-sm text-error">
           {error}
@@ -82,6 +105,11 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
       {inviteState.ok ? (
         <p role="status" className="text-sm text-success-text">
           Uitnodiging verstuurd.
+        </p>
+      ) : null}
+      {copilotState.ok ? (
+        <p role="status" className="text-sm text-success-text">
+          Aangemeld bij copilot.
         </p>
       ) : null}
     </div>

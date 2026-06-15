@@ -22,20 +22,33 @@ function DesktopNavItem({
   const active = isActive(pathname, item)
 
   if (item.children?.length) {
+    const triggerClassName = `inline-flex items-center whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground ${
+      active
+        ? 'border-card bg-brand-hover'
+        : 'border-transparent hover:bg-brand-hover'
+    }`
+
     return (
       <li className="group relative flex items-stretch">
-        <button
-          type="button"
-          aria-haspopup="true"
-          aria-current={active ? 'page' : undefined}
-          className={`inline-flex items-center whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground ${
-            active
-              ? 'border-card bg-brand-hover'
-              : 'border-transparent hover:bg-brand-hover'
-          }`}
-        >
-          {item.label}
-        </button>
+        {item.href ? (
+          <Link
+            href={item.href}
+            aria-haspopup="true"
+            aria-current={active ? 'page' : undefined}
+            className={triggerClassName}
+          >
+            {item.label}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            aria-haspopup="true"
+            aria-current={active ? 'page' : undefined}
+            className={triggerClassName}
+          >
+            {item.label}
+          </button>
+        )}
         <ul
           aria-label={`${item.label} menu`}
           className="invisible absolute left-0 top-full z-50 min-w-56 border border-outline-variant bg-card py-2 opacity-0 shadow-lg transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"

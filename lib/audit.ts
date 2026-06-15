@@ -67,6 +67,10 @@ export function staffPasswordSetAuditSummary(): string {
   return 'Medewerker heeft wachtwoord ingesteld'
 }
 
+export function staffCopilotRegistrationAuditSummary(): string {
+  return 'Copilot-registratie verstuurd'
+}
+
 export function clientUpdatedSummary(change: {
   changedFields: readonly string[]
   newStatus?: ClientStatus
