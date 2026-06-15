@@ -72,6 +72,10 @@ model StaffMember {
   isActive            Boolean        @default(true) @map("is_active")
   createdAt           DateTime       @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime       @updatedAt @map("updated_at") @db.Timestamptz
+  // Gezet wanneer DigiPlein de copilot-registratie van deze medewerker met succes
+  // heeft doorgezet (PENDING bij de centrale copilot-service). Weerspiegelt de push,
+  // niet de uiteindelijke koppeling — die gebeurt in de Scrum4Me-productinstellingen.
+  copilotRegisteredAt DateTime?      @map("copilot_registered_at") @db.Timestamptz
   loginPairings       LoginPairing[]
   invites             StaffInvite[]  @relation("StaffInviteTarget")
   createdStaffInvites StaffInvite[]  @relation("StaffInviteCreator")
