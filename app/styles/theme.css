@@ -95,6 +95,17 @@
   --radius: var(--radius-card);
 }
 
+/* scrum4me-copilot: de copilot-panelen renderen op witte kaarten, waarop de
+   decoratieve app-rand (--border: #eeeff5) wegvalt. Geef ELK copilot-element
+   (de kit zet overal data-s4m-slot) een donkere, zichtbare rand — zonder de
+   app-brede --border te raken. Dit override't de host-token gescopet op de
+   copilot en blijft kit-contract-conform; de kit zelf bevat geen kleurwaarden
+   (vendor/scrum4me-copilot/kit/README.md §3b). Werkt omdat border-border via
+   @theme inline naar var(--border) compileert. */
+[data-s4m-slot] {
+  --border: #2d2e33;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
