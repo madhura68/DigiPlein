@@ -37,6 +37,9 @@ export async function login(
   session.staffId = staff.id
   session.name = staff.name
   session.role = staff.role
+  delete session.paired
+  delete session.pairedExpiresAt
+  delete session.mustChangePassword
   await session.save()
 
   redirect('/')

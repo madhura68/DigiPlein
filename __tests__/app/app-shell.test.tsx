@@ -33,18 +33,20 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     mocks.pathname = '/clienten'
   })
 
-  it('ADMIN ziet alle nav-items incl. Audit-log + uitloggen', () => {
+  it('ADMIN ziet Beheer met Gebruikersbeheer en Audit-log + uitloggen', () => {
     render(<AppShell name="Sandra" role="ADMIN" />)
     for (const label of [
       'Start',
       'Cliënten',
       'Vrijwilligers',
       'Cursusaanbod',
-      'Audit-log',
       'Account',
+      'Gebruikersbeheer',
+      'Audit-log',
     ]) {
       expect(screen.getByRole('link', { name: label })).toBeInTheDocument()
     }
+    expect(screen.getByText('Beheer')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Uitloggen' })).toBeInTheDocument()
     expect(
       screen.getByRole('navigation', { name: 'Hoofdnavigatie' })
@@ -56,10 +58,14 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     expect(screen.getByRole('button', { name: 'Uitloggen' })).toHaveClass('h-11')
   })
 
-  it('STAFF ziet geen Audit-log', () => {
+  it('STAFF ziet geen Beheer-groep', () => {
     render(<AppShell name="Bea" role="STAFF" />)
+    expect(screen.queryByText('Beheer')).not.toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'Audit-log' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Gebruikersbeheer' })
     ).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Cliënten' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Account' })).toBeInTheDocument()
@@ -88,6 +94,16 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     )
   })
 
+  it('markeert Beheer actief op gebruikersbeheer-subroutes', () => {
+    mocks.pathname = '/medewerkers'
+    render(<AppShell name="Sandra" role="ADMIN" />)
+    expect(screen.getByText('Beheer')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Gebruikersbeheer' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+  })
+
   it('opent een mobiel menu met alle ADMIN-nav-items en uitloggen', () => {
     render(<AppShell name="Sandra" role="ADMIN" />)
 
@@ -104,6 +120,7 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
       'Vrijwilligers',
       'Cursusaanbod',
       'Account',
+      'Gebruikersbeheer',
       'Audit-log',
     ]) {
       expect(
@@ -118,14 +135,18 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     ).toBeInTheDocument()
   })
 
-  it('verbergt Audit-log voor STAFF in het mobiele menu', () => {
+  it('verbergt Beheer voor STAFF in het mobiele menu', () => {
     render(<AppShell name="Bea" role="STAFF" />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }))
     const drawerNav = screen.getByRole('navigation', { name: 'Mobiel menu' })
 
+    expect(within(drawerNav).queryByText('Beheer')).not.toBeInTheDocument()
     expect(
       within(drawerNav).queryByRole('link', { name: 'Audit-log' })
+    ).not.toBeInTheDocument()
+    expect(
+      within(drawerNav).queryByRole('link', { name: 'Gebruikersbeheer' })
     ).not.toBeInTheDocument()
     expect(
       within(drawerNav).getByRole('link', { name: 'Account' })
@@ -140,6 +161,23 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     const drawerNav = screen.getByRole('navigation', { name: 'Mobiel menu' })
 
     expect(within(drawerNav).getByRole('link', { name: 'Account' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+  })
+
+  it('markeert Beheer actief in het mobiele menu op audit-log', () => {
+    mocks.pathname = '/audit'
+    render(<AppShell name="Sandra" role="ADMIN" />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Menu' }))
+    const drawerNav = screen.getByRole('navigation', { name: 'Mobiel menu' })
+
+    expect(within(drawerNav).getByText('Beheer')).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+    expect(within(drawerNav).getByRole('link', { name: 'Audit-log' })).toHaveAttribute(
       'aria-current',
       'page'
     )

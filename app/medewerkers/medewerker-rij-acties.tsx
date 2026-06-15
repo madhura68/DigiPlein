@@ -3,10 +3,9 @@
 import { useActionState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import {
   deactivateStaff,
-  resetStaffPassword,
+  resendStaffInvite,
   updateStaff,
   type MedewerkerActionState,
 } from './actions'
@@ -26,8 +25,8 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
     deactivateStaff,
     initialState
   )
-  const [resetState, resetAction, resetting] = useActionState(
-    resetStaffPassword,
+  const [inviteState, inviteAction, inviting] = useActionState(
+    resendStaffInvite,
     initialState
   )
   const [roleState, roleAction, roleChanging] = useActionState(
@@ -35,7 +34,7 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
     initialState
   )
 
-  const error = deactivateState.error ?? roleState.error ?? resetState.error
+  const error = deactivateState.error ?? roleState.error ?? inviteState.error
   const nextRole = staff.role === 'ADMIN' ? 'STAFF' : 'ADMIN'
 
   return (
@@ -69,18 +68,10 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
           </Button>
         </form>
       </div>
-      <form action={resetAction} className="flex items-center gap-2">
+      <form action={inviteAction}>
         <input type="hidden" name="id" value={staff.id} />
-        <Input
-          name="password"
-          type="password"
-          placeholder="Nieuw wachtwoord"
-          autoComplete="new-password"
-          aria-label={`Nieuw wachtwoord voor ${staff.name}`}
-          className="h-9 max-w-48"
-        />
-        <Button type="submit" variant="secondary" size="sm" disabled={resetting}>
-          Reset
+        <Button type="submit" variant="secondary" size="sm" disabled={inviting}>
+          Nieuwe uitnodiging sturen
         </Button>
       </form>
       {error ? (
@@ -88,9 +79,9 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
           {error}
         </p>
       ) : null}
-      {resetState.ok ? (
+      {inviteState.ok ? (
         <p role="status" className="text-sm text-success-text">
-          Wachtwoord opnieuw ingesteld.
+          Uitnodiging verstuurd.
         </p>
       ) : null}
     </div>

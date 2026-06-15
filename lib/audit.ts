@@ -50,6 +50,23 @@ export function clientCreatedSummary(): string {
   return 'Cliënt aangemaakt'
 }
 
+export type StaffInviteAuditEvent = 'created' | 'resent' | 'accepted' | 'revoked'
+
+export function staffInviteAuditSummary(event: StaffInviteAuditEvent): string {
+  const summaries: Record<StaffInviteAuditEvent, string> = {
+    created: 'Medewerkeruitnodiging aangemaakt',
+    resent: 'Medewerkeruitnodiging opnieuw verstuurd',
+    accepted: 'Medewerkeruitnodiging geaccepteerd',
+    revoked: 'Medewerkeruitnodiging ingetrokken',
+  }
+
+  return summaries[event]
+}
+
+export function staffPasswordSetAuditSummary(): string {
+  return 'Medewerker heeft wachtwoord ingesteld'
+}
+
 export function clientUpdatedSummary(change: {
   changedFields: readonly string[]
   newStatus?: ClientStatus

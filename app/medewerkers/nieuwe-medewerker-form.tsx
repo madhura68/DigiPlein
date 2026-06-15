@@ -43,18 +43,6 @@ export function NieuweMedewerkerForm() {
             <option value="ADMIN">Beheerder</option>
           </select>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="font-medium">
-            Initieel wachtwoord
-          </label>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            required
-          />
-        </div>
       </div>
       {state.error ? (
         <p role="alert" className="text-error">
@@ -63,12 +51,12 @@ export function NieuweMedewerkerForm() {
       ) : null}
       {state.ok ? (
         <p role="status" className="font-medium text-success-text">
-          Medewerker toegevoegd.
+          Medewerker toegevoegd en uitnodiging verstuurd.
         </p>
       ) : null}
       <div>
         <Button type="submit" disabled={pending}>
-          {pending ? 'Bezig…' : 'Toevoegen'}
+          {pending ? 'Bezig…' : 'Uitnodigen'}
         </Button>
       </div>
     </form>

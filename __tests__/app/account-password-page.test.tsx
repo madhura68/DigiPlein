@@ -21,7 +21,9 @@ beforeEach(() => {
 describe('/account/wachtwoord', () => {
   it('vereist een medewerker-sessie', async () => {
     render(await PasswordPage())
-    expect(mocks.requireStaff).toHaveBeenCalledOnce()
+    expect(mocks.requireStaff).toHaveBeenCalledWith({
+      allowPasswordChange: true,
+    })
   })
 
   it('toont het wachtwoordformulier', async () => {
@@ -45,5 +47,20 @@ describe('/account/wachtwoord', () => {
     expect(
       screen.getByRole('button', { name: 'Wachtwoord opslaan' })
     ).toBeInTheDocument()
+  })
+
+  it('verbergt het huidige wachtwoordveld voor forced-password sessies', async () => {
+    mocks.requireStaff.mockResolvedValue({
+      staffId: 'staff-1',
+      name: 'Bea',
+      role: 'STAFF',
+      mustChangePassword: true,
+    })
+
+    render(await PasswordPage())
+
+    expect(screen.queryByLabelText('Huidig wachtwoord')).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Nieuw wachtwoord')).toBeInTheDocument()
+    expect(screen.getByLabelText('Nieuw wachtwoord herhalen')).toBeInTheDocument()
   })
 })

@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const verifyStaff = vi.fn()
 const save = vi.fn()
-const getSession = vi.fn(async () => ({ save }))
+let session: Record<string, unknown>
+const getSession = vi.fn(async () => session)
 vi.mock('@/lib/auth', () => ({
   verifyStaff: (...args: unknown[]) => verifyStaff(...args),
   getSession: () => getSession(),
@@ -24,6 +25,7 @@ function formData(fields: Record<string, string>): FormData {
 beforeEach(() => {
   verifyStaff.mockReset()
   save.mockReset()
+  session = { save }
 })
 
 describe('login action', () => {
@@ -43,10 +45,24 @@ describe('login action', () => {
   })
 
   it('geldige combinatie → sessie opgeslagen + redirect', async () => {
+    session = {
+      save,
+      paired: true,
+      pairedExpiresAt: 1_717_999_999_999,
+      mustChangePassword: true,
+    }
     verifyStaff.mockResolvedValue({ id: '1', name: 'Beheerder', role: 'ADMIN' })
     await expect(
       login({}, formData({ email: 'a@b.nl', password: 'goed' }))
     ).rejects.toThrow('NEXT_REDIRECT')
+    expect(session).toMatchObject({
+      staffId: '1',
+      name: 'Beheerder',
+      role: 'ADMIN',
+    })
+    expect(session.paired).toBeUndefined()
+    expect(session.pairedExpiresAt).toBeUndefined()
+    expect(session.mustChangePassword).toBeUndefined()
     expect(save).toHaveBeenCalledOnce()
   })
 })

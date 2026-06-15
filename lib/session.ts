@@ -7,6 +7,7 @@ export interface SessionData {
   role: StaffRole
   paired?: boolean
   pairedExpiresAt?: number
+  mustChangePassword?: boolean
 }
 
 export const sessionOptions: SessionOptions = {

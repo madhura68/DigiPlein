@@ -27,24 +27,27 @@ De MVP is het **datafundament + beheer + uitbreidingsmotor**: een ingelogde bibl
 | Vrijwilliger | — | Geen toegang in de MVP (komt in M3 met magic-link-zelfservice) |
 | Cliënt | — | Nooit toegang |
 
-Toegangsprincipes: geen enkele route met data is publiek; sessies via versleutelde cookie; geen wachtwoord-reset-selfservice in de MVP (beheerder reset — team is klein).
+Toegangsprincipes: geen enkele route met data is publiek; sessies via versleutelde cookie; geen wachtwoord-reset-selfservice per e-mail in de MVP. Medewerkers kunnen wel hun eigen wachtwoord wijzigen na invoer van het huidige wachtwoord; beheerders kunnen wachtwoorden resetten.
 
 ## 4. Functionele specificaties (MVP)
 
-### F-01 Inloggen & medewerkersbeheer
+### F-01 Inloggen, accountbeheer & medewerkersbeheer
 
 **Persona:** Sandra · **Prioriteit:** MVP
 
-Medewerkers loggen in met e-mail + wachtwoord. Beheerders maken medewerker-accounts aan, deactiveren ze en resetten wachtwoorden.
+Medewerkers loggen in met e-mail + wachtwoord. Als extra loginpad kan een al ingelogde medewerker een desktopbrowser inloggen via QR-pairing: de desktop toont een QR-code, een mobiel apparaat met bestaande sessie bevestigt de pairing, en de desktop krijgt daarna een normale medewerker-sessie. Ingelogde medewerkers hebben een accountpagina om hun wachtwoord te wijzigen en QR-login te starten. Beheerders maken medewerker-accounts aan, deactiveren ze en resetten wachtwoorden.
 
 **Acceptatiecriteria**
 - [ ] Inloggen met geldig e-mail+wachtwoord leidt naar het startscherm; ongeldige combinatie toont een neutrale foutmelding (geen "e-mail bestaat niet")
+- [ ] Inloggen via QR-pairing: desktop start de pairing, mobiel vereist bestaande sessie en expliciete bevestiging, verlopen/geannuleerde/geclaimde pairings kunnen niet opnieuw worden gebruikt
 - [ ] Niet-ingelogde bezoekers van een beschermde route worden naar `/login` geleid
+- [ ] Ingelogde medewerker kan via `Account` het eigen wachtwoord wijzigen na controle van het huidige wachtwoord; er wordt alleen een nieuwe bcrypt-hash opgeslagen
+- [ ] Ingelogde medewerker kan via `Account` een QR-login voor een andere browser starten
 - [ ] Beheerder kan medewerker aanmaken (naam, e-mail, rol), deactiveren en wachtwoord resetten; gedeactiveerde accounts kunnen niet inloggen
 - [ ] Laatste actieve beheerder kan zichzelf niet deactiveren of degraderen
 - [ ] Uitloggen beëindigt de sessie aantoonbaar (terugknop toont geen data)
 
-**Randgevallen:** sessie verlopen tijdens formulier → bij submit terug naar login zonder dataverlies-belofte; dubbele e-mail → validatiefout.
+**Randgevallen:** sessie verlopen tijdens formulier → bij submit terug naar login zonder dataverlies-belofte; dubbele e-mail → validatiefout; QR-pairing verloopt na korte tijd en toont neutrale fout/expired-state zonder accountdetails.
 
 ### F-02 Vrijwilligersbeheer
 
@@ -124,15 +127,18 @@ Het chat-window is het **Scrum4Me-Copilot**-component, ingebed voor ingelogde me
 - [ ] De AVG-guardrails uit product-spec §6.5 zijn actief: verzoeken om verboden velden (BSN, gezondheid, niveau-labels, …) worden geweigerd met uitleg
 - [ ] Elke uitgevoerde wijziging staat in het audit-log met verwijzing naar het chatverzoek
 
-### F-08 Startscherm
+### F-08 Startscherm & navigatie
 
 **Persona:** allen · **Prioriteit:** MVP
 
-Eenvoudig vertrekpunt: tegels naar de vier tabellen + chat, en een plek die in M3/M4 het "vandaag"-overzicht wordt (bezetting + wie er komt).
+Eenvoudig vertrekpunt: rustige begroeting, shell-navigatie naar de kernonderdelen + chat, en een plek die in M3/M4 het "vandaag"-overzicht wordt (bezetting + wie er komt). Desktop gebruikt de compacte witte header met oranje horizontale hoofdnavigatie. Telefoon en tablet gebruiken altijd een overlay-drawer voor dezelfde hoofdnavigatie.
 
 **Acceptatiecriteria**
-- [ ] Na inloggen: begroeting, vier navigatietegels (vrijwilligers, cliënten, cursusaanbod, medewerkers — laatste alleen `ADMIN`), chat-window-toegang
-- [ ] Lege-staat-teksten leggen in B1-taal uit wat elke tegel doet
+- [ ] Na inloggen: begroeting, shell-navigatie naar Start, vrijwilligers, cliënten, cursusaanbod en Account, plus chat-window-toegang
+- [ ] `Audit-log` staat alleen in de navigatie voor `ADMIN`
+- [ ] Telefoon/tablet tonen een `Menu`-knop die een Base UI overlay-drawer opent met dezelfde rolfiltering en actieve route-markering als desktop
+- [ ] Drawer sluit via sluitknop, Escape, backdrop en navigatieklik; klikdoelen zijn minimaal 44px en er is geen horizontale overflow op 390px breed
+- [ ] Lege-staat-teksten leggen in B1-taal uit wat elk onderdeel doet
 
 ## 5. Belangrijkste user flows
 
@@ -291,10 +297,12 @@ Geen update/delete via UI; alleen insert.
 
 ```
 /login
-/                  (startscherm: tegels + chat)
+/m/pair           (mobiele QR-pairing bevestiging)
+/                  (startscherm: begroeting + chat)
 /vrijwilligers     (+ /vrijwilligers/[id])
 /clienten          (+ /clienten/[id], /clienten/[id]/export)
 /cursusaanbod      (+ /cursusaanbod/[id] — bewerken alleen ADMIN)
+/account           (+ /account/wachtwoord, /account/qr-pairing)
 /medewerkers       (alleen ADMIN)
 /audit             (alleen ADMIN)
 — M3: /rooster (+ /rooster/[datum]), /mijn (vrijwilliger-zelfservice via magic link)
@@ -306,7 +314,7 @@ Geen update/delete via UI; alleen insert.
 | Eis | Waarde |
 |---|---|
 | Taal | Nederlands (nl-NL), B1-niveau, je-vorm (u alleen in juridische teksten) |
-| Platform | Responsive web; volwaardig op desktop, iPad en telefoon |
+| Platform | Responsive web; volwaardig op desktop, iPad en telefoon; telefoon/tablet gebruiken een overlay-drawer voor hoofdnavigatie |
 | Toegankelijkheid | WCAG 2.2 AA op alle schermen (product-spec §6.3); geen oranje tekst op wit |
 | Huisstijl | Tokens uit [research/branding-bibliotheek-rotterdam.md](research/branding-bibliotheek-rotterdam.md); geen logo zonder toestemming |
 | Beveiliging | Alles achter login; bcrypt; sessiecookie httpOnly/secure; rollen server-side afgedwongen; HTTPS-only |
@@ -319,7 +327,7 @@ Geen update/delete via UI; alleen insert.
 
 ### Samenvatting
 
-Een server-gerenderde Next.js-app (App Router) met PostgreSQL via Prisma, sessie-auth met iron-session, gehost in de EU. Alle mutaties via Server Actions met Zod-validatie; geen publieke API. Eén codebase, één database, geen achtergrond-infrastructuur behalve een dagelijkse cron (bewaartermijn, M5).
+Een server-gerenderde Next.js-app (App Router) met PostgreSQL via Prisma, sessie-auth met iron-session, gehost in de EU. Alle mutaties via Server Actions met Zod-validatie; API-routes zijn alleen aanwezig voor auth/chat-contracten zoals QR-pairing en blijven zonder sessie of zonder kortlevende pairing-cookie onbruikbaar. Eén codebase, één database, geen achtergrond-infrastructuur behalve een dagelijkse cron (bewaartermijn, M5).
 
 ### Stack
 
@@ -329,7 +337,7 @@ Een server-gerenderde Next.js-app (App Router) met PostgreSQL via Prisma, sessie
 | Taal | TypeScript strict | Veldenmodel-discipline (AVG) wil je compile-time afgedwongen |
 | Styling/UI | Tailwind CSS v4 + shadcn/ui + huisstijl-tokens in één `theme.css` | Toegankelijke primitives; tokens centraal zodat een merk-update één bestand raakt |
 | DB | PostgreSQL + Prisma v7 | Relationeel model met constraints (uniques, cascades voor F-05-verwijdering); migratie-flow is ook het chat-window-mechanisme |
-| Auth | iron-session + bcryptjs; magic links (M3) via ondertekende, kortlevende tokens | Geen externe auth-dienst nodig (AVG: minder verwerkers); wachtwoordloos voor vrijwilligers |
+| Auth | iron-session + bcryptjs; QR-pairing voor medewerkers; magic links (M3) via ondertekende, kortlevende tokens | Geen externe auth-dienst nodig (AVG: minder verwerkers); QR-login verlaagt frictie voor ingelogde medewerkers, wachtwoordloos voor vrijwilligers volgt later |
 | Validatie | Zod in elke Server Action | 422-conventie |
 | Test | Vitest | unit op AVG-regels (veldenmodel, sessieteller, bewaartermijn) + flows |
 | E-mail (M3+) | EU-provider met verwerkersovereenkomst, of SMTP van de bibliotheek | open vraag; MVP heeft geen mail nodig |
@@ -342,15 +350,17 @@ Een server-gerenderde Next.js-app (App Router) met PostgreSQL via Prisma, sessie
 | NextAuth / Auth.js | Twee rollen en magic links vragen geen framework; iron-session is hier minder bewegende delen |
 | Native app | Responsive web dekt iPad/telefoon; installatiedrempel is juist een tegenargument bij deze doelgroep |
 | middleware.ts | Next 16-conventie: route-bescherming in `proxy.ts` |
-| Realtime (SSE/websockets) | Geen gelijktijdigheidsbehoefte; wekelijkse cadans |
+| Algemene realtime (websockets) | Geen gelijktijdigheidsbehoefte; wekelijkse cadans. Uitzondering: QR-pairing gebruikt een korte SSE-statusstream voor de desktop-loginflow. |
 | Multi-tenant opzet | Eén team, één locatie; uitbreidingsassen zitten in het datamodel, niet in tenancy |
 
 ### Auth-flow
 
 1. Medewerker: `/login` → e-mail+wachtwoord → bcrypt-check → iron-session-cookie → `/`
-2. `proxy.ts` beschermt alle routes behalve `/login` (en in M3 de magic-link-route)
-3. Rolcheck server-side per action/route (`ADMIN`-only: medewerkers, cursus-bewerken, hard delete, chat-bevestiging, audit)
-4. M3: vrijwilliger vraagt magic link aan (e-mail) → kortlevend token → beperkte sessie met scope "eigen voorkeur/afwezigheid + rooster"
+2. QR-pairing: desktop start `/api/auth/pair/start`, krijgt een path-scoped HttpOnly pre-auth cookie en QR-code; mobiel opent `/m/pair#id=...&s=...`, vereist bestaande sessie en expliciete bevestiging; desktop volgt status via SSE en claimt via `/api/auth/pair/claim`
+3. Accountbeheer: `/account/wachtwoord` wijzigt het eigen wachtwoord alleen na controle van het huidige wachtwoord; `/account/qr-pairing` start dezelfde QR-loginflow voor een andere browser
+4. `proxy.ts` beschermt alle routes behalve `/login`, `/m/pair` en de strikt beperkte auth-pairing endpoints (en in M3 de magic-link-route)
+5. Rolcheck server-side per action/route (`ADMIN`-only: medewerkers, cursus-bewerken, hard delete, chat-bevestiging, audit)
+6. M3: vrijwilliger vraagt magic link aan (e-mail) → kortlevend token → beperkte sessie met scope "eigen voorkeur/afwezigheid + rooster"
 
 ### Omgevingsvariabelen
 

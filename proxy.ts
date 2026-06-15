@@ -15,8 +15,9 @@ export function proxy(request: NextRequest) {
   // API-routes regelen hun eigen auth (JSON 401) i.p.v. een HTML-redirect naar
   // /login — o.a. de scrum4me-copilot-route (/api/s4m) dwingt z'n eigen sessie-check af.
   const isApiRoute = pathname.startsWith('/api/')
+  const isInviteRoute = pathname.startsWith('/uitnodiging/')
 
-  if (!hasSession && !isLoginRoute && !isApiRoute) {
+  if (!hasSession && !isLoginRoute && !isApiRoute && !isInviteRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
   if (hasSession && isLoginRoute) {

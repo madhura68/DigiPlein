@@ -2,9 +2,11 @@
 title: "DigiPlein QR-pairing login"
 status: active
 design_status: approved-design
+implementation_status: implemented
 date: 2026-06-13
 product_id: cmq9hybds0003v27r99zvo92k
 source: "Scrum4Me QR-pairing login flow"
+last_verified: 2026-06-13
 ---
 
 # DigiPlein QR-pairing login
@@ -19,6 +21,12 @@ iron-session met `{ staffId, name, role }`.
 
 De bestaande wachtwoord-login, rollen (`ADMIN`/`STAFF`) en server-side
 autorisatie blijven ongewijzigd.
+
+## Resultaat
+
+De QR-pairing flow is gerealiseerd als extra medewerker-loginpad naast
+e-mail/wachtwoord. De accountpagina kan dezelfde flow starten voor een andere
+browser via `/account/qr-pairing`.
 
 ## Gekozen aanpak
 

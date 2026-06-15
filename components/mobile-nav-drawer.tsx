@@ -10,6 +10,62 @@ import { isActive, type NavItem } from '@/components/nav-items'
 import { Button } from '@/components/ui/button'
 import { STAFF_ROLE_LABELS } from '@/lib/enums'
 
+function MobileNavItem({
+  item,
+  onNavigate,
+  pathname,
+}: {
+  item: NavItem
+  onNavigate: () => void
+  pathname: string
+}) {
+  const active = isActive(pathname, item)
+
+  if (item.children?.length) {
+    return (
+      <li>
+        <div className="flex flex-col gap-1">
+          <span
+            aria-current={active ? 'page' : undefined}
+            className={`flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground ${
+              active ? 'bg-brand-hover' : 'bg-surface'
+            }`}
+          >
+            {item.label}
+          </span>
+          <ul className="flex flex-col gap-1 pl-4">
+            {item.children.map((child) => (
+              <MobileNavItem
+                key={child.href ?? child.label}
+                item={child}
+                onNavigate={onNavigate}
+                pathname={pathname}
+              />
+            ))}
+          </ul>
+        </div>
+      </li>
+    )
+  }
+
+  if (!item.href) return null
+
+  return (
+    <li>
+      <Link
+        href={item.href}
+        aria-current={active ? 'page' : undefined}
+        onClick={onNavigate}
+        className={`flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+          active ? 'bg-brand-hover' : 'hover:bg-surface-hover'
+        }`}
+      >
+        {item.label}
+      </Link>
+    </li>
+  )
+}
+
 export function MobileNavDrawer({
   items,
   name,
@@ -54,23 +110,14 @@ export function MobileNavDrawer({
 
           <nav aria-label="Mobiel menu">
             <ul className="flex flex-col gap-2">
-              {items.map((item) => {
-                const active = isActive(pathname, item.href)
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      aria-current={active ? 'page' : undefined}
-                      onClick={() => setOpen(false)}
-                      className={`flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
-                        active ? 'bg-brand-hover' : 'hover:bg-surface-hover'
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                )
-              })}
+              {items.map((item) => (
+                <MobileNavItem
+                  key={item.href ?? item.label}
+                  item={item}
+                  onNavigate={() => setOpen(false)}
+                  pathname={pathname}
+                />
+              ))}
             </ul>
           </nav>
 

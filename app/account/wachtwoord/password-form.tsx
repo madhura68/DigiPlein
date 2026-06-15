@@ -9,7 +9,7 @@ import { changeOwnPassword, type ChangePasswordState } from './actions'
 
 const initialState: ChangePasswordState = {}
 
-export function PasswordForm() {
+export function PasswordForm({ forced = false }: { forced?: boolean }) {
   const [state, formAction, pending] = useActionState(
     changeOwnPassword,
     initialState
@@ -20,18 +20,20 @@ export function PasswordForm() {
       action={formAction}
       className="flex max-w-xl flex-col gap-4 rounded-card border border-outline-variant bg-card p-6"
     >
-      <div className="flex flex-col gap-1.5">
-        <label htmlFor="currentPassword" className="font-medium">
-          Huidig wachtwoord
-        </label>
-        <Input
-          id="currentPassword"
-          name="currentPassword"
-          type="password"
-          autoComplete="current-password"
-          required
-        />
-      </div>
+      {forced ? null : (
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="currentPassword" className="font-medium">
+            Huidig wachtwoord
+          </label>
+          <Input
+            id="currentPassword"
+            name="currentPassword"
+            type="password"
+            autoComplete="current-password"
+            required
+          />
+        </div>
+      )}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="newPassword" className="font-medium">
           Nieuw wachtwoord

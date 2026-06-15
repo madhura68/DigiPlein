@@ -1,6 +1,6 @@
 # Design-spec — responsive sidebar-menu DigiPlein
 
-Status: approved_by_user  
+Status: implemented
 Datum: 2026-06-13  
 Branch: `codex/responsive-sidebar-menu`
 
@@ -64,6 +64,13 @@ De drawer is een Base UI `Dialog` met:
 Op desktop blijft de huidige horizontale navigatie zichtbaar. De drawerknop is
 dan verborgen. Daarmee is deze stap klein en laag-risico, terwijl het mobiele
 gebruik direct verbetert.
+
+## Resultaat
+
+Gerealiseerd op branch `codex/responsive-sidebar-menu` en aangeboden in PR
+#10. De implementatie splitst de gedeelde navigatie uit naar
+`components/nav-items.ts` en gebruikt `components/mobile-nav-drawer.tsx` voor
+de Base UI overlay-drawer.
 
 ## Alternatieven
 

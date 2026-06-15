@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => {
     hash: vi.fn(),
     requireStaff: vi.fn(),
     staffMember,
+    writeAuditLog: vi.fn(),
     prisma: { staffMember },
   }
 })
@@ -18,6 +19,10 @@ vi.mock('bcryptjs', () => ({
   default: { compare: mocks.compare, hash: mocks.hash },
 }))
 vi.mock('@/lib/auth', () => ({ requireStaff: mocks.requireStaff }))
+vi.mock('@/lib/audit', () => ({
+  staffPasswordSetAuditSummary: () => 'Medewerker heeft wachtwoord ingesteld',
+  writeAuditLog: mocks.writeAuditLog,
+}))
 vi.mock('@/lib/db', () => ({ prisma: mocks.prisma }))
 
 import { changeOwnPassword } from '@/app/account/wachtwoord/actions'
@@ -44,8 +49,14 @@ beforeEach(() => {
   compare.mockResolvedValue(true)
   hash.mockReset()
   hash.mockResolvedValue('hashed-new')
+  mocks.writeAuditLog.mockReset()
+  mocks.writeAuditLog.mockResolvedValue(undefined)
   requireStaff.mockReset()
-  requireStaff.mockResolvedValue({ staffId: 'staff-1', role: 'STAFF' })
+  requireStaff.mockResolvedValue({
+    staffId: 'staff-1',
+    role: 'STAFF',
+    save: vi.fn(),
+  })
   staffMember.findUnique.mockReset()
   staffMember.findUnique.mockResolvedValue({
     id: 'staff-1',
@@ -113,11 +124,58 @@ describe('account wachtwoord action', () => {
     const res = await changeOwnPassword({}, validForm())
 
     expect(res.ok).toBe(true)
+    expect(requireStaff).toHaveBeenCalledWith({ allowPasswordChange: true })
     expect(compare).toHaveBeenCalledWith('huidig-wachtwoord', 'hashed-current')
     expect(hash).toHaveBeenCalledWith('nieuw-wachtwoord', 10)
     expect(staffMember.update).toHaveBeenCalledWith({
       where: { id: 'staff-1' },
       data: { passwordHash: 'hashed-new' },
     })
+  })
+
+  it('forced-password flow vereist geen huidig wachtwoord en wist de sessieflag', async () => {
+    const save = vi.fn()
+    const session = {
+      staffId: 'staff-1',
+      role: 'STAFF',
+      mustChangePassword: true,
+      save,
+    }
+    requireStaff.mockResolvedValue(session)
+
+    const res = await changeOwnPassword(
+      {},
+      validForm({ currentPassword: '' })
+    )
+
+    expect(res.ok).toBe(true)
+    expect(compare).not.toHaveBeenCalled()
+    expect(hash).toHaveBeenCalledWith('nieuw-wachtwoord', 10)
+    expect(staffMember.update).toHaveBeenCalledWith({
+      where: { id: 'staff-1' },
+      data: { passwordHash: 'hashed-new' },
+    })
+    expect(session.mustChangePassword).toBeUndefined()
+    expect(save).toHaveBeenCalledOnce()
+    expect(mocks.writeAuditLog).toHaveBeenCalledWith({
+      actorType: 'STAFF',
+      actorId: 'staff-1',
+      action: 'PASSWORD_SET',
+      entity: 'staff_member',
+      entityId: 'staff-1',
+      summary: 'Medewerker heeft wachtwoord ingesteld',
+    })
+  })
+
+  it('gewone flow blijft een huidig wachtwoord eisen', async () => {
+    const res = await changeOwnPassword(
+      {},
+      validForm({ currentPassword: '' })
+    )
+
+    expect(res.status).toBe(422)
+    expect(res.error).toMatch(/huidig wachtwoord/i)
+    expect(compare).not.toHaveBeenCalled()
+    expect(staffMember.update).not.toHaveBeenCalled()
   })
 })
