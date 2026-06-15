@@ -18,6 +18,7 @@ describe('nav-items', () => {
 
   it('houdt admin-only Beheer met kinderen zichtbaar voor ADMIN', () => {
     const beheer = navItemsForRole('ADMIN').find((item) => item.label === 'Beheer')
+    expect(beheer?.href).toBe('/beheer')
     expect(beheer?.children?.map((item) => item.label)).toEqual([
       'Gebruikersbeheer',
       'Audit-log',
@@ -33,6 +34,7 @@ describe('nav-items', () => {
   it('markeert Beheer actief voor gebruikersbeheer en audit-log', () => {
     const beheer = navItemsForRole('ADMIN').find((item) => item.label === 'Beheer')
     expect(beheer).toBeDefined()
+    expect(isActive('/beheer', beheer!)).toBe(true)
     expect(isActive('/medewerkers', beheer!)).toBe(true)
     expect(isActive('/audit', beheer!)).toBe(true)
   })

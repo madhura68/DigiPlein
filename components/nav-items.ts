@@ -14,6 +14,7 @@ export const NAV: NavItem[] = [
   { href: '/cursusaanbod', label: 'Cursusaanbod' },
   { href: '/account', label: 'Account' },
   {
+    href: '/beheer',
     label: 'Beheer',
     adminOnly: true,
     children: [

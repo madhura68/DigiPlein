@@ -57,9 +57,10 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     render(<AppShell name="Sandra" role="ADMIN" />)
 
     const desktopNav = screen.getByRole('navigation', { name: 'Hoofdnavigatie' })
-    const beheerTrigger = within(desktopNav).getByRole('button', {
+    const beheerTrigger = within(desktopNav).getByRole('link', {
       name: 'Beheer',
     })
+    expect(beheerTrigger).toHaveAttribute('href', '/beheer')
     expect(beheerTrigger).toHaveAttribute('aria-haspopup', 'true')
     expect(beheerTrigger).not.toHaveAttribute('aria-current')
 
@@ -118,8 +119,20 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
   it('markeert Beheer actief op gebruikersbeheer-subroutes', () => {
     mocks.pathname = '/medewerkers'
     render(<AppShell name="Sandra" role="ADMIN" />)
-    expect(screen.getByText('Beheer')).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Beheer' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
     expect(screen.getByRole('link', { name: 'Gebruikersbeheer' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    )
+  })
+
+  it('markeert Beheer actief op de beheer-overzichtspagina', () => {
+    mocks.pathname = '/beheer'
+    render(<AppShell name="Sandra" role="ADMIN" />)
+    expect(screen.getByRole('link', { name: 'Beheer' })).toHaveAttribute(
       'aria-current',
       'page'
     )
@@ -141,6 +154,7 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
       'Vrijwilligers',
       'Cursusaanbod',
       'Account',
+      'Beheer',
       'Gebruikersbeheer',
       'Audit-log',
     ]) {
@@ -194,7 +208,7 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Menu' }))
     const drawerNav = screen.getByRole('navigation', { name: 'Mobiel menu' })
 
-    expect(within(drawerNav).getByText('Beheer')).toHaveAttribute(
+    expect(within(drawerNav).getByRole('link', { name: 'Beheer' })).toHaveAttribute(
       'aria-current',
       'page'
     )
