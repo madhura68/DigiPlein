@@ -26,7 +26,14 @@ RUN npx prisma generate && npm run build
 # --- runner: minimale runtime ---
 FROM node:22-alpine AS runner
 WORKDIR /app
-RUN apk add --no-cache libc6-compat
+# libc6-compat: Prisma/native deps. msmtp + ca-certificates: mailtransport via
+# de sendmail-shim (MAIL_TRANSPORT=smtp spawnt /usr/sbin/sendmail). Alpine levert
+# /usr/sbin/sendmail standaard als busybox-applet (kan niet relayen) en geen
+# msmtp; daarom installeren we msmtp en wijzen de sendmail-shim ernaar. De
+# relay-config (incl. creds) komt read-only via een gemounte /etc/msmtprc —
+# niet in het image. Zie deploy-runbook msmtp-mailprovider.
+RUN apk add --no-cache libc6-compat msmtp ca-certificates \
+    && ln -sf /usr/bin/msmtp /usr/sbin/sendmail
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
