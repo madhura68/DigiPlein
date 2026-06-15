@@ -28,11 +28,17 @@ vi.mock('@/lib/auth/pairing', () => ({
   generateDesktopToken: mocks.generateDesktopToken,
   hashToken: mocks.hashToken,
 }))
+vi.mock('@/lib/env', () => ({
+  env: { APP_BASE_URL: 'https://digiplein.example.test' },
+}))
 
 import { POST } from '@/app/api/auth/pair/start/route'
 
+// Het desktopverzoek komt binnen op de interne bind-host achter de reverse proxy
+// (0.0.0.0:3000) — onbereikbaar voor de telefoon. De QR moet daarom de publieke
+// APP_BASE_URL gebruiken, nooit de request-origin.
 function request(headers: Record<string, string> = {}) {
-  return new Request('https://digiplein.example.test/api/auth/pair/start', {
+  return new Request('https://0.0.0.0:3000/api/auth/pair/start', {
     method: 'POST',
     headers,
   })
@@ -59,7 +65,7 @@ beforeEach(() => {
 })
 
 describe('POST /api/auth/pair/start', () => {
-  it('maakt een pending pairing, zet desktop-cookie en retourneert QR-url', async () => {
+  it('maakt een pending pairing, zet desktop-cookie en bouwt de QR-url uit APP_BASE_URL (niet de request-host)', async () => {
     const res = await POST(request({ 'user-agent': 'Safari'.repeat(80) }))
 
     expect(res.status).toBe(200)
