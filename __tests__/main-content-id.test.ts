@@ -20,9 +20,10 @@ describe('skip-link guard', () => {
 
     for (const file of pages) {
       const src = readFileSync(file, 'utf8')
-      const hasMain = /<main[\s>]/.test(src)
-      const hasId = /id=["']main-content["']/.test(src)
-      if (hasMain && !hasId) violations.push(file.replace(process.cwd() + '/', ''))
+      const mainCount = (src.match(/<main[\s>]/g) ?? []).length
+      const idCount = (src.match(/id=["']main-content["']/g) ?? []).length
+      if (mainCount > 0 && idCount !== mainCount)
+        violations.push(`${file.replace(process.cwd() + '/', '')} (${idCount}/${mainCount} ids)`)
     }
 
     expect(violations, `Pages met <main> zonder id="main-content":\n${violations.join('\n')}`).toEqual([])
