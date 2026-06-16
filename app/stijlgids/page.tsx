@@ -64,7 +64,7 @@ export default async function StijlgidsPage() {
           Een{" "}
           <a
             href="#"
-            className="font-bold text-foreground underline underline-offset-4 hover:text-primary-text hover:no-underline"
+            className="font-bold text-foreground underline underline-offset-4 hover:text-primary-text"
           >
             tekstlink in lopende tekst
           </a>{" "}

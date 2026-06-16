@@ -53,9 +53,7 @@ export default async function MedewerkersPage() {
                     <StatusChip label="Aangemeld" tone="info" />
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">
-                    Niet aangemeld
-                  </span>
+                  <StatusChip label="Niet aangemeld" tone="neutral" />
                 )}
               </TableCell>
               <TableCell>
