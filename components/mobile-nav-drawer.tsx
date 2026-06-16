@@ -20,8 +20,12 @@ function MobileNavItem({
   pathname: string
 }) {
   const active = isActive(pathname, item)
+  // Start open if a child is currently active so the active route isn't hidden
+  const initialOpen = item.children?.some((child) => isActive(pathname, child)) ?? false
+  const [childrenOpen, setChildrenOpen] = useState(initialOpen)
 
   if (item.children?.length) {
+    const childrenId = `mnav-${item.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
     const parentClassName = `flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground outline-none transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
       active ? 'bg-brand-hover' : 'hover:bg-surface-hover'
     }`
@@ -39,25 +43,29 @@ function MobileNavItem({
               {item.label}
             </Link>
           ) : (
-            <span
-              aria-current={active ? 'page' : undefined}
-              className={`flex min-h-11 items-center rounded-card px-4 py-2 font-bold text-foreground ${
-                active ? 'bg-brand-hover' : 'bg-surface'
-              }`}
+            <button
+              type="button"
+              aria-expanded={childrenOpen}
+              aria-controls={childrenId}
+              className={`${parentClassName} w-full text-left`}
+              onClick={() => setChildrenOpen((v) => !v)}
             >
               {item.label}
-            </span>
+            </button>
           )}
-          <ul className="flex flex-col gap-1 pl-4">
-            {item.children.map((child) => (
-              <MobileNavItem
-                key={child.href ?? child.label}
-                item={child}
-                onNavigate={onNavigate}
-                pathname={pathname}
-              />
-            ))}
-          </ul>
+          {/* Link-parent: always show children. Button-parent: show only when open. */}
+          {(item.href != null || childrenOpen) && (
+            <ul id={childrenId} className="flex flex-col gap-1 pl-4">
+              {item.children.map((child) => (
+                <MobileNavItem
+                  key={child.href ?? child.label}
+                  item={child}
+                  onNavigate={onNavigate}
+                  pathname={pathname}
+                />
+              ))}
+            </ul>
+          )}
         </div>
       </li>
     )
