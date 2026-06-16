@@ -21,7 +21,7 @@ const base = {
   copilotRegistered: false,
 }
 
-const knop = { name: 'Stuur copilot-registratie' }
+const knop = { name: 'Copilot-registratie sturen' }
 
 describe('MedewerkerRijActies — copilot-registratieknop', () => {
   it('toont de knop voor een actieve, nog niet aangemelde medewerker', () => {

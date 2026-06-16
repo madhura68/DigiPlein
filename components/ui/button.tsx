@@ -21,6 +21,7 @@ const buttonVariants = cva(
         default: "h-11 px-[18px] py-2.5 text-base",
         sm: "h-9 px-4 text-sm",
         lg: "h-12 px-6 text-lg",
+        icon: "h-8 w-8 rounded-md border-foreground bg-background text-foreground hover:bg-surface-hover [&_svg]:size-4",
       },
     },
     defaultVariants: {
