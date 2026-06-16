@@ -51,7 +51,7 @@ function DesktopNavItem({
         }}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
-            const trigger = e.currentTarget.querySelector<HTMLElement>('[aria-haspopup="true"]')
+            const trigger = e.currentTarget.querySelector<HTMLElement>('[aria-haspopup="menu"]')
             // Only suppress+redirect focus when coming from a child — if trigger
             // already has focus, calling .focus() again fires no event, leaving
             // suppressFocusOpen stuck true for the next natural focus cycle.
@@ -66,7 +66,7 @@ function DesktopNavItem({
         {item.href ? (
           <Link
             href={item.href}
-            aria-haspopup="true"
+            aria-haspopup="menu"
             aria-expanded={open}
             aria-current={active ? 'page' : undefined}
             className={triggerClassName}
@@ -77,7 +77,7 @@ function DesktopNavItem({
         ) : (
           <button
             type="button"
-            aria-haspopup="true"
+            aria-haspopup="menu"
             aria-expanded={open}
             aria-current={active ? 'page' : undefined}
             className={triggerClassName}
