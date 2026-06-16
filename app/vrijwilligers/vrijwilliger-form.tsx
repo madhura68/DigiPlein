@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 
 import { AvgNotice } from '@/components/avg-notice'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import type { VrijwilligerActionState } from './actions'
 
@@ -92,16 +93,14 @@ export function VrijwilligerForm({
         <legend className="font-medium">Voorkeursdagen</legend>
         <div className="flex flex-wrap gap-6">
           <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               name="prefersTuesday"
               defaultChecked={initial?.prefersTuesday}
             />
             Dinsdag
           </label>
           <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
+            <Checkbox
               name="prefersThursday"
               defaultChecked={initial?.prefersThursday}
             />
