@@ -1,6 +1,7 @@
 'use client'
 
 import { useActionState } from 'react'
+import { Bot, MailPlus, UserCog, UserX } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -46,20 +47,23 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
     inviteState.error ??
     copilotState.error
   const nextRole = staff.role === 'ADMIN' ? 'STAFF' : 'ADMIN'
+  const roleLabel = staff.role === 'ADMIN' ? 'Maak medewerker' : 'Maak beheerder'
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-1">
         {staff.isActive ? (
           <form action={deactivateAction}>
             <input type="hidden" name="id" value={staff.id} />
             <Button
               type="submit"
+              size="icon"
               variant="secondary"
-              size="sm"
+              aria-label="Deactiveren"
+              title="Deactiveren"
               disabled={deactivating}
             >
-              Deactiveren
+              <UserX />
             </Button>
           </form>
         ) : null}
@@ -70,45 +74,56 @@ export function MedewerkerRijActies({ staff }: { staff: StaffRow }) {
           <input type="hidden" name="role" value={nextRole} />
           <Button
             type="submit"
+            size="icon"
             variant="secondary"
-            size="sm"
+            aria-label={roleLabel}
+            title={roleLabel}
             disabled={roleChanging}
           >
-            {staff.role === 'ADMIN' ? 'Maak medewerker' : 'Maak beheerder'}
+            <UserCog />
           </Button>
         </form>
-      </div>
-      <form action={inviteAction}>
-        <input type="hidden" name="id" value={staff.id} />
-        <Button type="submit" variant="secondary" size="sm" disabled={inviting}>
-          Nieuwe uitnodiging sturen
-        </Button>
-      </form>
-      {staff.isActive && !staff.copilotRegistered ? (
-        <form action={copilotAction}>
+        <form action={inviteAction}>
           <input type="hidden" name="id" value={staff.id} />
           <Button
             type="submit"
+            size="icon"
             variant="secondary"
-            size="sm"
-            disabled={copilotSending}
+            aria-label="Uitnodiging sturen"
+            title="Uitnodiging sturen"
+            disabled={inviting}
           >
-            Stuur copilot-registratie
+            <MailPlus />
           </Button>
         </form>
-      ) : null}
+        {staff.isActive && !staff.copilotRegistered ? (
+          <form action={copilotAction}>
+            <input type="hidden" name="id" value={staff.id} />
+            <Button
+              type="submit"
+              size="icon"
+              variant="secondary"
+              aria-label="Copilot-registratie sturen"
+              title="Copilot-registratie sturen"
+              disabled={copilotSending}
+            >
+              <Bot />
+            </Button>
+          </form>
+        ) : null}
+      </div>
       {error ? (
-        <p role="alert" className="text-sm text-error">
+        <p role="alert" className="text-xs text-error">
           {error}
         </p>
       ) : null}
       {inviteState.ok ? (
-        <p role="status" className="text-sm text-success-text">
+        <p role="status" className="text-xs text-success-text">
           Uitnodiging verstuurd.
         </p>
       ) : null}
       {copilotState.ok ? (
-        <p role="status" className="text-sm text-success-text">
+        <p role="status" className="text-xs text-success-text">
           Aangemeld bij copilot.
         </p>
       ) : null}
