@@ -12,7 +12,7 @@ function Card({
       data-slot="card"
       className={cn(
         "rounded-card border border-outline-variant bg-card p-6 text-card-foreground",
-        plectrum && "rounded-br-[100px]",
+        plectrum && "rounded-br-plectrum",
         className
       )}
       {...props}
