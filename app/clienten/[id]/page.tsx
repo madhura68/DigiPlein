@@ -25,7 +25,7 @@ export default async function ClientDetailPage({
   if (!client) notFound()
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-10">
+    <main id="main-content" className="mx-auto flex max-w-3xl flex-col gap-8 px-6 py-10">
       <div className="flex flex-col gap-1">
         <Link
           href="/clienten"

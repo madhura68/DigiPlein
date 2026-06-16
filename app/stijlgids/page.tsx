@@ -21,7 +21,7 @@ export default async function StijlgidsPage() {
   await requireStaff()
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-12">
+    <main id="main-content" className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-12">
       <header className="flex flex-col gap-3">
         <h1>Stijlgids</h1>
         <p className="max-w-2xl text-muted-foreground">
