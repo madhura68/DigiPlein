@@ -7,9 +7,9 @@ import {
 } from '@/components/ui/table'
 
 // Hybride beheerlist (HS-3): witte contentkaart met plectrum-hoek rond een tabel.
-// Kolommen blijven zichtbaar voor scanbaarheid; de caller bouwt de rijen (eerste
-// kolom = naam als donker-oranje link met secundaire regel, acties rechts) met
-// TableRow/TableCell uit components/ui/table.
+// overflow-hidden clips de hoeken; de tussenliggende overflow-x-auto geeft horizontal
+// scroll zonder dat de buitenrand wordt weggeknipt.
+// Caller bouwt rijen (eerste kolom = naam als link, acties rechts) met TableRow/TableCell.
 export function AdminList({
   headers,
   children,
@@ -18,17 +18,19 @@ export function AdminList({
   children: React.ReactNode
 }) {
   return (
-    <div className="overflow-hidden rounded-card rounded-br-[2rem] border border-outline-variant bg-card">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            {headers.map((header) => (
-              <TableHead key={header}>{header}</TableHead>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>{children}</TableBody>
-      </Table>
+    <div className="overflow-hidden rounded-card rounded-br-plectrum border border-outline-variant bg-card">
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              {headers.map((header) => (
+                <TableHead key={header}>{header}</TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody>{children}</TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

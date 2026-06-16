@@ -44,6 +44,12 @@ export default async function RootLayout({
   return (
     <html lang="nl" className={poppins.variable}>
       <body className="min-h-screen antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-3 focus:rounded-pill focus:bg-brand focus:text-foreground"
+        >
+          Ga naar inhoud
+        </a>
         {session.staffId ? (
           <AppShell name={session.name} role={session.role} />
         ) : null}

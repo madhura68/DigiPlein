@@ -7,7 +7,7 @@ export default async function QrPairingPage() {
   await requireStaff()
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+    <main id="main-content" className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
       <PageHeader
         title="QR-login starten"
         description="Open deze pagina op de desktop waarop je wilt inloggen."

@@ -51,7 +51,7 @@ export default async function AuditPage({
   const hasNext = logs.length === PAGE_SIZE
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+    <main id="main-content" className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
       <PageHeader
         title="Audit-log"
         description="Wijzigingsgeschiedenis voor verantwoording (AVG). Regels zijn niet bewerkbaar of verwijderbaar."

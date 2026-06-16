@@ -10,7 +10,7 @@ export default async function NieuweClientPage() {
   await requireStaff()
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10">
+    <main id="main-content" className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10">
       <div className="flex flex-col gap-2">
         <Link
           href="/clienten"

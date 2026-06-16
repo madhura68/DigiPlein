@@ -61,7 +61,7 @@ describe('AppShell (HS-2 shell + navigatie)', () => {
       name: 'Beheer',
     })
     expect(beheerTrigger).toHaveAttribute('href', '/beheer')
-    expect(beheerTrigger).toHaveAttribute('aria-haspopup', 'true')
+    expect(beheerTrigger).toHaveAttribute('aria-haspopup', 'menu')
     expect(beheerTrigger).not.toHaveAttribute('aria-current')
 
     const beheerMenu = within(desktopNav).getByRole('list', {

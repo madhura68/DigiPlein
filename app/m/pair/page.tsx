@@ -7,7 +7,7 @@ export default async function PairPage() {
   await requireStaff()
 
   return (
-    <main className="mx-auto flex min-h-[80vh] max-w-lg flex-col justify-center px-6 py-10">
+    <main id="main-content" className="mx-auto flex min-h-[80vh] max-w-lg flex-col justify-center px-6 py-10">
       <Card className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <p className="text-sm font-bold uppercase text-primary-text">

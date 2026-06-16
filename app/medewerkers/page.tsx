@@ -18,7 +18,7 @@ export default async function MedewerkersPage() {
   })
 
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
+    <main id="main-content" className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-10">
       <PageHeader
         title="Medewerkers"
         description="Beheer wie toegang heeft tot DigiPlein. Je kunt medewerkers uitnodigen, rollen aanpassen en toegang deactiveren."
@@ -53,9 +53,7 @@ export default async function MedewerkersPage() {
                     <StatusChip label="Aangemeld" tone="info" />
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground">
-                    Niet aangemeld
-                  </span>
+                  <StatusChip label="Niet aangemeld" tone="neutral" />
                 )}
               </TableCell>
               <TableCell>
@@ -74,9 +72,17 @@ export default async function MedewerkersPage() {
           ))}
         </AdminList>
       ) : (
-        <p className="text-muted-foreground">
-          Nog geen medewerkers. Voeg de eerste toe.
-        </p>
+        <div className="rounded-card border border-dashed border-outline-variant bg-card p-8 text-center">
+          <p className="font-bold">Nog geen medewerkers</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Voeg de eerste medewerker toe om aan de slag te gaan.
+          </p>
+          <div className="mt-4">
+            <Link href="/medewerkers/nieuw" className={buttonVariants()}>
+              Nieuwe medewerker
+            </Link>
+          </div>
+        </div>
       )}
     </main>
   )

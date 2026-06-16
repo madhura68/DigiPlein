@@ -44,7 +44,7 @@ export default async function StaffInvitePage({
 
   if (!isOpenInvite(invite)) {
     return (
-      <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-6 px-6 py-10">
+      <main id="main-content" className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-6 px-6 py-10">
         <PageHeader
           title="Uitnodiging niet beschikbaar"
           description="Deze uitnodiging is ongeldig of verlopen. Vraag een beheerder om een nieuwe uitnodiging."
@@ -62,7 +62,7 @@ export default async function StaffInvitePage({
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-6 px-6 py-10">
+    <main id="main-content" className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center gap-6 px-6 py-10">
       <PageHeader
         title="Uitnodiging accepteren"
         description="Je stelt je wachtwoord in na het accepteren van deze uitnodiging."

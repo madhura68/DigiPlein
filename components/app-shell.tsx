@@ -3,6 +3,7 @@
 import type { StaffRole } from '@prisma/client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useState, useRef } from 'react'
 
 import { logout } from '@/app/logout/actions'
 import { MobileNavDrawer } from '@/components/mobile-nav-drawer'
@@ -19,39 +20,79 @@ function DesktopNavItem({
   item: NavItem
   pathname: string
 }) {
+  const [open, setOpen] = useState(false)
+  // Prevents the trigger's onFocus from reopening the menu immediately after
+  // an Escape-triggered refocus (see onKeyDown below).
+  const suppressFocusOpen = useRef(false)
   const active = isActive(pathname, item)
 
   if (item.children?.length) {
-    const triggerClassName = `inline-flex items-center whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground ${
+    const triggerClassName = `cursor-pointer inline-flex items-center whitespace-nowrap border-b-4 px-4 py-3 font-bold text-foreground ${
       active
         ? 'border-card bg-brand-hover'
         : 'border-transparent hover:bg-brand-hover'
     }`
 
+    function handleTriggerFocus() {
+      if (suppressFocusOpen.current) {
+        suppressFocusOpen.current = false
+        return
+      }
+      setOpen(true)
+    }
+
     return (
-      <li className="group relative flex items-stretch">
+      <li
+        className="relative flex items-stretch"
+        onMouseEnter={() => setOpen(true)}
+        onMouseLeave={() => setOpen(false)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') {
+            const trigger = e.currentTarget.querySelector<HTMLElement>('[aria-haspopup="menu"]')
+            // Only suppress+redirect focus when coming from a child — if trigger
+            // already has focus, calling .focus() again fires no event, leaving
+            // suppressFocusOpen stuck true for the next natural focus cycle.
+            if (trigger && document.activeElement !== trigger) {
+              suppressFocusOpen.current = true
+              trigger.focus()
+            }
+            setOpen(false)
+          }
+        }}
+      >
         {item.href ? (
           <Link
             href={item.href}
-            aria-haspopup="true"
+            aria-haspopup="menu"
+            aria-expanded={open}
             aria-current={active ? 'page' : undefined}
             className={triggerClassName}
+            onFocus={handleTriggerFocus}
           >
             {item.label}
           </Link>
         ) : (
           <button
             type="button"
-            aria-haspopup="true"
+            aria-haspopup="menu"
+            aria-expanded={open}
             aria-current={active ? 'page' : undefined}
             className={triggerClassName}
+            onFocus={handleTriggerFocus}
           >
             {item.label}
           </button>
         )}
+        {/* Visibility is JS-driven via `open` so aria-expanded always matches what's visible.
+            CSS group-hover/group-focus-within are intentionally removed to prevent state drift. */}
         <ul
           aria-label={`${item.label} menu`}
-          className="invisible absolute left-0 top-full z-50 min-w-56 border border-outline-variant bg-card py-2 opacity-0 shadow-lg transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100"
+          className={`absolute left-0 top-full z-50 min-w-56 border border-outline-variant bg-card py-2 shadow-lg transition ${
+            open ? 'visible opacity-100' : 'invisible opacity-0'
+          }`}
         >
           {item.children.map((child) => {
             if (!child.href) return null
@@ -62,9 +103,7 @@ function DesktopNavItem({
                   href={child.href}
                   aria-current={childActive ? 'page' : undefined}
                   className={`block whitespace-nowrap px-4 py-2 font-bold text-foreground transition-colors ${
-                    childActive
-                      ? 'bg-brand-hover'
-                      : 'hover:bg-brand-hover'
+                    childActive ? 'bg-brand-hover' : 'hover:bg-brand-hover'
                   }`}
                 >
                   {child.label}

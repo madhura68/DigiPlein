@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 
-// Plectrum-motief: kleine basisradius + één sterk afgeronde hoek (100px) op
+// Plectrum-motief: kleine basisradius + één sterk afgeronde hoek (--corner-plectrum) op
 // uitgelichte kaarten — de signatuur uit de huisstijl van Bibliotheek Rotterdam.
 function Card({
   className,
@@ -12,7 +12,7 @@ function Card({
       data-slot="card"
       className={cn(
         "rounded-card border border-outline-variant bg-card p-6 text-card-foreground",
-        plectrum && "rounded-br-[100px]",
+        plectrum && "rounded-br-plectrum",
         className
       )}
       {...props}
