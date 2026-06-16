@@ -18,7 +18,7 @@ export function AdminList({
   children: React.ReactNode
 }) {
   return (
-    <div className="overflow-hidden rounded-card rounded-br-plectrum border border-outline-variant bg-card">
+    <div className="overflow-hidden rounded-card border border-outline-variant bg-card">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
