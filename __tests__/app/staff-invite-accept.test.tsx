@@ -13,7 +13,7 @@ import StaffInvitePage from '@/app/uitnodiging/[token]/page'
 beforeEach(() => {
   mocks.staffInvite.findUnique.mockReset()
   mocks.staffInvite.findUnique.mockResolvedValue({
-    expiresAt: new Date('2026-06-18T10:00:00.000Z'),
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
     usedAt: null,
     revokedAt: null,
     staff: { isActive: true },
