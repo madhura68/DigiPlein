@@ -12,6 +12,7 @@ export const NAV: NavItem[] = [
   { href: '/clienten', label: 'Cliënten' },
   { href: '/vrijwilligers', label: 'Vrijwilligers' },
   { href: '/cursusaanbod', label: 'Cursusaanbod' },
+  { href: '/over', label: 'Over' },
   { href: '/account', label: 'Account' },
   {
     href: '/beheer',

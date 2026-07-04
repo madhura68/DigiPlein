@@ -10,6 +10,7 @@ describe('nav-items', () => {
       'Cliënten',
       'Vrijwilligers',
       'Cursusaanbod',
+      'Over',
       'Account',
     ])
     expect(JSON.stringify(items)).not.toContain('Beheer')
@@ -28,6 +29,7 @@ describe('nav-items', () => {
   it('markeert subroutes actief behalve voor Start', () => {
     expect(isActive('/account/wachtwoord', '/account')).toBe(true)
     expect(isActive('/clienten/123', '/clienten')).toBe(true)
+    expect(isActive('/over', '/over')).toBe(true)
     expect(isActive('/clienten', '/')).toBe(false)
   })
 
