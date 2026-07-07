@@ -2,7 +2,7 @@
 
 Interne web-app voor het digivaardigheidsteam van Bibliotheek Rotterdam: vrijwilligersrooster en cliëntregistratie voor de lessen **Klik & Tik** (begeleid oefenen via oefenen.nl) en **Les op maat** (1-op-1 met leerdoel, max. 4×2 uur) op dinsdag- en donderdagochtend, plus een chat-window waarmee medewerkers de app zelf kunnen uitbreiden.
 
-> Status: specificatiefase. Er is nog geen code — de volledige specificatie-set staat in [docs/](docs/README.md). "DigiPlein" is een werknaam.
+> Status: in ontwikkeling. De volledige specificatie-set staat in [docs/](docs/README.md). "DigiPlein" is een werknaam.
 
 ## Snel starten
 

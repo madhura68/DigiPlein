@@ -13,7 +13,7 @@ Interne web-app voor het digivaardigheidsteam van Bibliotheek Rotterdam (Central
 
 Volgt de globale Scrum4Me-methodiek (`~/.claude/rules/scrum4me-methodiek.md` voor Claude; de "Scrum4Me-methodiek"-sectie in `~/.codex/AGENTS.md` voor Codex). Niet-triviaal werk: plan → Sprint/PBI/Story/Taak via de `scrum4me` MCP → `update_task_status` per laag → docs in de DB.
 
-- **Verify:** nog geen code in deze repo — vanaf de scaffold (ST-001, zie backlog) geldt `npm run verify && npm run build`
+- **Verify:** `npm run verify && npm run build`
 
 ## Oriëntatie
 
