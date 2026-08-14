@@ -11,7 +11,7 @@ Interne web-app voor het digivaardigheidsteam van Bibliotheek Rotterdam (Central
   - Werkwijze-gates per story (verify+build groen, acceptatiecriteria aantoonbaar, AVG-hardstops, a11y-check, Scrum4Me-logging): zie de hardstops + het gedeelde patroon in [docs/plans/M0-M2-mvp-implementatieplan.md](docs/plans/M0-M2-mvp-implementatieplan.md)
 - **Bouwvolgorde:** sprint S-2026-06-11-1 (M0) → -2 (M1) → -3 (M2; chat-integratie als slotstap). Let op: zolang meerdere sprints OPEN staan kan `get_claude_context` de nieuwste als `active_sprint` tonen — begin bij M0/ST-001 (story-codes ST-001 t/m ST-004 in sprint -1).
 
-Volgt de globale Scrum4Me-methodiek (`~/.Codex/rules/scrum4me-methodiek.md` voor Codex; de "Scrum4Me-methodiek"-sectie in `~/.codex/AGENTS.md` voor Codex). Niet-triviaal werk: plan → Sprint/PBI/Story/Taak via de `scrum4me` MCP → `update_task_status` per laag → docs in de DB.
+Volgt de globale Scrum4Me-methodiek (`~/.claude/rules/scrum4me-methodiek.md` voor Claude; de "Scrum4Me-methodiek"-sectie in `~/.codex/AGENTS.md` voor Codex). Niet-triviaal werk: plan → Sprint/PBI/Story/Taak via de `scrum4me` MCP → `update_task_status` per laag → docs in de DB.
 
 - **Verify:** `npm run verify && npm run build`
 
